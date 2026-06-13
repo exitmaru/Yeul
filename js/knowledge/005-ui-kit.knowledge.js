@@ -1,49 +1,63 @@
 // =========================================================
 // knowledge/005-ui-kit.knowledge.js
-// 공통 지식 — 아이콘 · 카드 · 편향바 · 상태 뷰.
-//   참조 UI(ute-editor) 계승: 얇은 라운드 글래스 카드 +
-//   카테고리 태그 + 우상단 화살표(원문) + 메타(매체/유형/편향).
+// 공통 지식 — 아이콘 · 장면 카드 · 섹션 조각.
+//   영화 프로모션 톤: 라운드 카드 + 막(Act) 배지 + 시 미리보기(궁서체).
 // =========================================================
-import { esc, timeAgo, ymd, bias } from "./001-formatters.knowledge.js";
+import { esc, ymd } from "./001-formatters.knowledge.js";
 
 export const ICON = {
-  arrow: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>`,
+  arrow: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`,
+  arrowUpRight: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>`,
   copy: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`,
   close: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
   up: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`,
-  paper: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h6"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+  film: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>`,
 };
 
-/** 편향 막대 (none 이면 빗금) */
-export function biasBar(score) {
-  const b = bias(score);
-  if (b.na) return `<span class="bias-na">${esc(b.label)}</span>
-    <div class="bias-bar na"></div>`;
-  return `<span class="bias-label" style="color:${b.color}">${esc(b.label)}</span>
-    <div class="bias-bar"><i style="width:${b.pct}%;background:${b.color}"></i></div>`;
+/** WHO'S IT FOR 카드 아이콘 */
+export const AUDIENCE_ICON = {
+  battery: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="16" height="8" rx="2"/><path d="M22 11v2M6 12h2"/></svg>`,
+  draft: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 13h6M9 16h4"/></svg>`,
+  exit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/></svg>`,
+};
+
+/** 원문 앞부분 발췌 */
+export function excerpt(text = "", n = 64) {
+  const t = text.replace(/\s+/g, " ").trim();
+  return t.length > n ? t.slice(0, n) + "…" : t;
 }
 
-/** 풍자 시 카드 (얇은 글래스, 참조 UI 계승) */
-export function poemCard(p) {
+/** 시의 첫 의미있는 행 */
+export function firstVerse(poem = "") {
+  return (poem.split("\n").find((l) => l.trim()) || "").trim();
+}
+
+/** 장면 카드 (영화 한 컷 느낌) */
+export function sceneCard(s) {
   return `
-    <article class="card" data-id="${esc(p.id)}" tabindex="0" role="button" aria-label="${esc(p.title)} 상세 보기">
-      <a class="card-open" href="${esc(p.source.url)}" target="_blank" rel="noopener"
-         title="원문 보기" aria-label="원문 보기" data-stop>${ICON.arrow}</a>
-      <span class="card-tag cat-${esc(p.category)}">${esc(p.category)}</span>
-      <h3 class="card-title">${esc(p.title)}</h3>
-      <div class="card-grid">
-        <div class="kv"><span>매체</span><b>${ICON.paper} ${esc(p.source.media)}</b></div>
-        <div class="kv"><span>유형</span><b>${esc(p.type)}</b></div>
-        <div class="kv bias"><span>편향</span><div class="bias-wrap">${biasBar(p.bias)}</div></div>
+    <article class="scene-card" data-id="${esc(s.id)}" tabindex="0" role="button"
+             aria-label="${esc(s.act)} ${esc(s.title)} 장면 열기">
+      <div class="scene-top">
+        <span class="act-badge">${esc(s.act)}</span>
+        <span class="scene-no">SCENE ${esc(s.id)}</span>
+        <span class="scene-open" aria-hidden="true">${ICON.arrowUpRight}</span>
       </div>
-      <div class="card-foot">
-        <span class="chip date">${esc(ymd(p.date))}</span>
-        ${(p.hashtags || []).slice(0, 3).map((h) => `<span class="chip tag">${esc(h)}</span>`).join("")}
-        <span class="ago">${esc(timeAgo(p.date))}</span>
+      <h3 class="scene-title">${esc(s.title)}</h3>
+      <p class="scene-source">${esc(excerpt(s.source, 78))}</p>
+      <p class="scene-verse gungseo">“${esc(firstVerse(s.poem))}”</p>
+      <div class="scene-foot">
+        <span class="tag cat">${esc(s.category)}</span>
+        <span class="scene-date">${esc(ymd(s.date))}</span>
       </div>
     </article>`;
 }
 
-export function emptyView(msg = "표시할 시가 없어요") {
-  return `<div class="empty"><div class="big">🪶</div><p>${esc(msg)}</p></div>`;
+export function sectionHead(eyebrow, title, lead = "") {
+  return `
+    <header class="sec-head">
+      ${eyebrow ? `<span class="eyebrow">${esc(eyebrow)}</span>` : ""}
+      <h2 class="sec-title">${esc(title)}</h2>
+      ${lead ? `<p class="sec-lead">${esc(lead)}</p>` : ""}
+    </header>`;
 }

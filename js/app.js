@@ -5,8 +5,8 @@
 //   아래 register 에 한 줄 매달면 끝.
 // =========================================================
 import { Router } from "./core/001-router.core.js";
-import feedUnit from "./units/001-feed.unit.js";
-import detailUnit from "./units/002-detail.unit.js";
+import landingUnit from "./units/001-landing.unit.js";
+import sceneDetailUnit from "./units/002-scene-detail.unit.js";
 
 // ---- 라우터 구성 (단일 인스턴스) ----
 const router = new Router({
@@ -15,8 +15,8 @@ const router = new Router({
 });
 
 router
-  .register(feedUnit)
-  .register(detailUnit)
+  .register(landingUnit)
+  .register(sceneDetailUnit)
   .start();
 
 // 외부에서 접근 가능하도록(디버그/확장)

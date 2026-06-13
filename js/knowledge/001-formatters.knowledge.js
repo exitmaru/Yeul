@@ -33,19 +33,6 @@ export function ymd(iso) {
   return iso ? new Date(iso).toISOString().slice(0, 10) : "";
 }
 
-/**
- * 편향 점수(0~10) -> 색/라벨.
- *  0=강한 좌, 5=중립, 10=강한 우. null 이면 무관(N/A).
- */
-export function bias(score) {
-  if (score == null) return { label: "좌우 무관(N/A)", color: "#7e8aa6", pct: 0, na: true };
-  const pct = Math.max(0, Math.min(100, score * 10));
-  let label = "중립", color = "#5ce18a";
-  if (score <= 3) { label = "좌 성향"; color = "#5c9cff"; }
-  else if (score >= 7) { label = "우 성향"; color = "#ff6b6b"; }
-  return { label: `${score}/10 ${label}`, color, pct, na: false };
-}
-
 export function debounce(fn, ms = 220) {
   let t;
   return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
