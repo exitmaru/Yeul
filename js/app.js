@@ -8,6 +8,9 @@ import { Router } from "./core/001-router.core.js";
 import landingUnit from "./units/001-landing.unit.js";
 import sceneDetailUnit from "./units/002-scene-detail.unit.js";
 
+// 리빌 활성화(렌더 전에 켜야 첫 화면도 숨김→등장). 이 줄이 안 돌면 .reveal 은 그냥 보임.
+document.documentElement.classList.add("reveal-ready");
+
 // ---- 라우터 구성 (단일 인스턴스) ----
 const router = new Router({
   view: document.getElementById("view"),
@@ -34,7 +37,7 @@ themeBtn?.addEventListener("click", () => {
   localStorage.setItem("yeul.theme", next);
 });
 
-// 스크롤 탑 (우하단 플로팅)
+// 스크롤 탑 (우하단 플로팅). 상단 내비는 항상 고정 표시.
 const topBtn = document.getElementById("scroll-top");
 const onScroll = () => topBtn?.classList.toggle("show", window.scrollY > 320);
 window.addEventListener("scroll", onScroll, { passive: true });
@@ -42,3 +45,10 @@ topBtn?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smo
 onScroll();
 
 // 브랜드(.brand[data-route])는 라우터의 링크 위임이 처리한다.
+
+// 내비 CTA → 장면 섹션으로 스크롤
+document.getElementById("nav-cta")?.addEventListener("click", () => {
+  router.navigate("/");
+  requestAnimationFrame(() =>
+    document.getElementById("scenes")?.scrollIntoView({ behavior: "smooth" }));
+});
