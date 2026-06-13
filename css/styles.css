@@ -117,6 +117,7 @@ body {
   transition: background var(--t), border-color var(--t), color var(--t);
 }
 .nav-cta:hover { background: var(--brand); border-color: var(--brand); color: #fafafd; }
+.nav-cta:active { transform: scale3d(.94, .94, 1); transition-duration: .08s; }
 @media (max-width: 460px) { .nav-cta { display: none; } }
 
 /* ---------- View / sections ---------- */
@@ -185,6 +186,9 @@ body {
 .btn.ghost { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.34); }
 .btn.ghost:hover { background: rgba(255, 255, 255, 0.08); transform: scale3d(.95, .95, 1.01); }
 .btn.ghost:hover svg { transform: none; }
+/* 클릭(누름) 모션 — 원본 hover scale 위에 짧고 깊은 press */
+.btn:active { transform: scale3d(.92, .92, 1); transition-duration: .08s; }
+.btn.ghost:active { transform: scale3d(.92, .92, 1); }
 
 /* ---------- Marquee (full-bleed) ---------- */
 .marquee { position: relative; width: 100vw; margin: 8px 0 0 calc(50% - 50vw); overflow: hidden; padding: 16px 0;
@@ -317,6 +321,9 @@ body {
 .pill-btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 17px; border-radius: var(--pill); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer;
   border: 1px solid transparent; background: var(--brand); color: #fff; transition: transform var(--t), background-color var(--t), color var(--t), border-color var(--t); }
 .pill-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.pill-btn:active { transform: scale3d(.93, .93, 1); transition-duration: .08s; }
+.act-tab:active, .nav-btn:active, .icon-btn:active, .scene-card:active { transition-duration: .08s; }
+.act-tab:active, .nav-btn:active { transform: scale3d(.94, .94, 1); }
 .pill-btn svg { stroke: currentColor; }
 .pill-btn.ghost { background: var(--surface); color: var(--ink-dim); border-color: var(--line); }
 .pill-btn.ghost:hover { color: var(--ink); filter: none; }

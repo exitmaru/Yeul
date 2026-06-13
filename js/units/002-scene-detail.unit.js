@@ -11,6 +11,7 @@ import { downloadPoemImage } from "../knowledge/006-poem-image.knowledge.js";
 
 let mountedId = null;
 let keyHandler = null;
+let scrollCleanup = null;
 
 function close(router) { router.setQuery({ id: null }); }
 
@@ -21,10 +22,45 @@ function verses(poem = "") {
     .join("");
 }
 
-function detachKeys() {
+function detach() {
   if (keyHandler) document.removeEventListener("keydown", keyHandler);
   keyHandler = null;
+  if (scrollCleanup) scrollCleanup();
+  scrollCleanup = null;
   document.body.classList.remove("modal-open");
+}
+
+/**
+ * 스크롤로 모달 닫기 — 시는 모달 안에서 스크롤되게 두고,
+ * 끝에서 더 넘기거나(오버스크롤) 배경 위에서 스크롤하면 닫는다.
+ */
+function attachScrollDismiss(body, onClose) {
+  let acc = 0, fired = false, startY = null;
+  const TH = 80;
+  const trigger = () => { if (!fired) { fired = true; onClose(); } };
+  const atEdge = (dir) => {
+    const top = body.scrollTop <= 0;
+    const bottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 1;
+    return (dir > 0 && bottom) || (dir < 0 && top);
+  };
+  const onWheel = (e) => {
+    if (!body.contains(e.target) || atEdge(e.deltaY)) { acc += Math.abs(e.deltaY); if (acc > TH) trigger(); }
+    else acc = 0;
+  };
+  const onTS = (e) => { startY = e.touches[0].clientY; acc = 0; };
+  const onTM = (e) => {
+    if (startY == null) return;
+    const dy = startY - e.touches[0].clientY;
+    if ((!body.contains(e.target) || atEdge(dy)) && Math.abs(dy) > TH) trigger();
+  };
+  document.addEventListener("wheel", onWheel, { passive: true });
+  document.addEventListener("touchstart", onTS, { passive: true });
+  document.addEventListener("touchmove", onTM, { passive: true });
+  return () => {
+    document.removeEventListener("wheel", onWheel);
+    document.removeEventListener("touchstart", onTS);
+    document.removeEventListener("touchmove", onTM);
+  };
 }
 
 function render({ mount, params, router }) {
@@ -34,7 +70,7 @@ function render({ mount, params, router }) {
   if (!s) {                       // id 없음/오류 → 정리
     if (mount.innerHTML) mount.innerHTML = "";
     mountedId = null;
-    detachKeys();
+    detach();
     if (id) router.setQuery({ id: null, replace: true });
     return;
   }
@@ -48,7 +84,7 @@ function render({ mount, params, router }) {
 
   mount.innerHTML = `
     <div class="modal-backdrop" data-close></div>
-    <div class="modal glass" role="dialog" aria-modal="true" aria-label="${esc(s.title)}">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(s.title)}">
       <header class="modal-head">
         <div class="modal-head-left">
           <span class="act-badge">${esc(s.act)}</span>
@@ -107,7 +143,7 @@ function render({ mount, params, router }) {
   if (prev) mount.querySelector("#prev-btn").onclick = () => router.setQuery({ id: prev.id });
   if (next) mount.querySelector("#next-btn").onclick = () => router.setQuery({ id: next.id });
 
-  detachKeys();
+  detach();
   keyHandler = (e) => {
     if (e.key === "Escape") close(router);
     else if (e.key === "ArrowLeft" && prev) router.setQuery({ id: prev.id });
@@ -115,6 +151,10 @@ function render({ mount, params, router }) {
   };
   document.addEventListener("keydown", keyHandler);
   document.body.classList.add("modal-open");
+
+  // 스크롤 넘김 → 닫기 (다음 프레임에 부착해 여는 제스처 잔여 무시)
+  const body = mount.querySelector(".modal-body");
+  requestAnimationFrame(() => { scrollCleanup = attachScrollDismiss(body, () => close(router)); });
 }
 
 export default {
