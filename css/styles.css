@@ -83,18 +83,16 @@ body {
   overflow-x: hidden;
 }
 
-/* ---------- Floating pill nav ---------- */
+/* ---------- Floating pill nav (fixed — body overflow-x 영향 없이 항상 고정) ---------- */
 .topbar {
-  position: sticky; top: 16px; z-index: 50;
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 50;
   display: flex; align-items: center; justify-content: space-between;
   width: min(var(--maxw), calc(100% - 32px));
-  margin: 16px auto 0; padding: 8px 8px 8px 22px;
+  margin: 0; padding: 8px 8px 8px 22px;
   background: var(--page);
   border: 1px solid var(--line); border-radius: var(--pill);
   box-shadow: 0 3px 12px rgba(48, 44, 255, 0.05);
-  transition: transform 0.35s var(--ease), box-shadow var(--t);
 }
-.topbar.nav-hidden { transform: translateY(calc(-100% - 28px)); }
 .brand { display: flex; align-items: center; gap: 7px; text-decoration: none; color: var(--ink); }
 .brand-mark { font-size: 18px; font-weight: 800; color: var(--brand); }
 .brand-name { font-weight: 800; font-size: 18px; letter-spacing: -0.01em; }
@@ -125,6 +123,8 @@ body {
 /* ---------- View / sections ---------- */
 .view { width: min(var(--maxw), calc(100% - 32px)); margin: 0 auto; padding: 22px 0 0; }
 .band { padding: clamp(46px, 8vw, 96px) clamp(4px, 2vw, 18px); }
+/* 고정 내비가 섹션 제목을 가리지 않도록 앵커 스크롤 오프셋 */
+[id="synopsis"], [id="audience"], [id="scenes"], [id="faq"], [id="credits"] { scroll-margin-top: 96px; }
 
 /* Section head */
 .sec-head { max-width: 680px; margin-bottom: 38px; }
