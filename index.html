@@ -2,67 +2,38 @@
 <html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Yeul — 기깔나는 GitHub 레포지토리 탐색기" />
-  <title>Yeul · GitHub Explorer</title>
-  <link rel="preconnect" href="https://api.github.com" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Yeul — 글이 풍자 시로 다시 태어나는 곳" />
+  <meta name="theme-color" content="#070b16" />
+  <title>Yeul · 풍자 시</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%B6%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
   <div class="aurora" aria-hidden="true"></div>
 
-  <header class="topbar">
-    <a class="brand" href="/" data-route="">
-      <span class="brand-mark">✦</span>
+  <header class="topbar glass">
+    <a class="brand" href="/" data-route>
+      <span class="brand-mark">✶</span>
       <span class="brand-name">Yeul</span>
-      <span class="brand-sub">GitHub Explorer</span>
+      <span class="brand-sub">풍자 시</span>
     </a>
-
-    <form class="search" id="search-form" role="search">
-      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
-      <input
-        id="search-input"
-        type="search"
-        placeholder="레포지토리 검색…  예) facebook/react, tetris, language:rust"
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="레포지토리 검색"
-      />
-      <kbd class="hint">↵</kbd>
-    </form>
-
-    <div class="actions">
-      <button class="icon-btn" id="token-btn" title="GitHub 토큰 설정 (요청 한도 상향)" aria-label="토큰 설정">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 1 1 6 0v3H9z"/></svg>
-      </button>
-      <button class="icon-btn" id="theme-btn" title="테마 전환" aria-label="테마 전환">
-        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
-      </button>
-    </div>
+    <button class="icon-btn" id="theme-btn" title="테마 전환" aria-label="테마 전환">
+      <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+    </button>
   </header>
 
-  <main id="app" class="view">
-    <!-- 라우터가 렌더링 -->
-  </main>
+  <main id="view" class="view"><!-- 라우터 view 레이어 --></main>
 
-  <footer class="footer">
-    <span>Made with <span class="heart">♥</span> · Yeul</span>
-    <span class="ratelimit" id="ratelimit"></span>
-  </footer>
+  <div id="overlay"><!-- 라우터 overlay 레이어 (모달) --></div>
 
-  <dialog id="token-dialog" class="dialog">
-    <form method="dialog" class="dialog-body" id="token-form">
-      <h2>GitHub Personal Access Token</h2>
-      <p>비인증 요청은 시간당 60회로 제한됩니다. 토큰을 넣으면 5,000회로 늘어나며, <strong>브라우저에만 저장</strong>되고 서버로 전송되지 않습니다.</p>
-      <input id="token-input" type="password" placeholder="ghp_… (읽기 전용 권한이면 충분)" autocomplete="off" />
-      <div class="dialog-actions">
-        <button value="clear" class="btn ghost" type="submit">삭제</button>
-        <button value="save" class="btn primary" type="submit">저장</button>
-      </div>
-    </form>
-  </dialog>
+  <button id="scroll-top" class="fab glass" aria-label="맨 위로">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
 
   <script type="module" src="/js/app.js"></script>
 </body>

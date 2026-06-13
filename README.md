@@ -1,59 +1,78 @@
-# ✦ Yeul · GitHub Explorer
+# ✶ Yeul · 풍자 시
 
-코드의 우주를 탐험하는, **기깔나는 GitHub 레포지토리 탐색기**.
-빌드 스텝 없는 순수 정적 SPA라 Cloudflare Pages에 그대로 올라갑니다.
+수집된 글(원문)이 **정해진 지침에 따라 풍자 시로 다시 태어나** 카드로 리스트업되는 웹앱.
+각 시는 상세 보기에서 **원문 역추적**과 **클립보드 복사**가 가능합니다.
+빌드 스텝 없는 정적 SPA라 **Cloudflare Pages** 에 그대로 올라갑니다.
 
-![theme: dark/light](https://img.shields.io/badge/theme-dark%2Flight-7c9cff)
-![build](https://img.shields.io/badge/build-none%20needed-5ce1c8)
-![deploy](https://img.shields.io/badge/deploy-Cloudflare%20Pages-orange)
+![brand](https://img.shields.io/badge/brand-cobalt%20blue-2f6bff)
+![font](https://img.shields.io/badge/font-Pretendard-1b3fb0)
+![build](https://img.shields.io/badge/build-none%20needed-5ce18a)
+![deploy](https://img.shields.io/badge/deploy-Cloudflare%20Pages-f38020)
 
-## ✨ 기능
+## ✨ 핵심
 
-- 🔭 **레포 검색** — `facebook/react`, `language:rust stars:>1000`, `topic:ai` 같은 GitHub 검색 문법 그대로 지원
-- 🔥 **트렌딩 홈** — 최근 한 달 떠오르는 인기 레포 추천
-- 📊 **레포 상세** — 스타/포크/이슈 통계, 언어 비율 바, 토픽, 라이선스, 기여자
-- 📁 **파일 브라우저** — 디렉터리 탐색 + 브레드크럼 (뒤로가기 지원)
-- 📖 **README 렌더링** — 자체 마크다운 렌더러(상대 경로 이미지/링크 해석, HTML 이스케이프로 XSS 차단)
-- 🕑 **최근 커밋** 타임라인
-- 🌗 **다크/라이트 테마** + 오로라 배경
-- 🔑 **PAT 지원** — 토큰은 브라우저(localStorage)에만 저장, 서버 전송 없음. 시간당 60 → 5,000회로 한도 상향
-- ⌨️ **단축키** — `/` 로 검색 포커스, `Esc` 로 해제
+- 🪶 **풍자 시 피드** — 얇은 글래스 카드로 리스트업 (참조 UI 계승)
+- 🔎 **검색 · 분류 필터 · 간결 보기** 토글
+- 📋 **복사** — 상세 모달에서 시 전문을 클립보드로 (토스트 피드백)
+- ↗ **원문 역추적** — 카드/모달에서 출처로 바로 이동
+- 🧭 **편향 표시** — 0~10 점수 막대 + 무관(N/A) 빗금 표기
+- 🌗 **다크/라이트 테마**, 코발트 블루 + Pretendard, 오로라 배경
+- ⬆️ **우하단 스크롤 탑** 플로팅 버튼
 
-## 🗂 구조
+## 🏗 아키텍처 — 단일 라우터 + 유닛 + 공통 지식
+
+확장을 위해 **하나의 라우터**에 기능(유닛)을 매답니다. 모든 유닛은 **공통 지식**을 단일 출처로 참조합니다.
 
 ```
-index.html        # 셸 + 상단바/다이얼로그
-css/styles.css    # 글래스모피즘 다크/라이트 테마
 js/
-  app.js          # History API 라우터 + 뷰 렌더링 + 전역 UI
-  api.js          # GitHub REST 래퍼 (캐시 · 레이트리밋 · 토큰)
-  markdown.js     # 경량 마크다운 → HTML (escape-first)
-  util.js         # 포맷터 · 언어 색상 · 헬퍼
-_redirects        # Cloudflare Pages SPA fallback
+  core/                         # 뼈대
+    000-convention.core.js      # 파일명/문법 규칙 — 라우터에 고정
+    001-router.core.js          # 단일 라우터 (view + overlay 2레이어)
+  knowledge/                    # 공통 지식 — 모든 유닛이 참조
+    001-formatters.knowledge.js #   포맷터 · 편향 · 헬퍼
+    002-guidelines.knowledge.js #   변환 "지침" · 분류/유형 정의
+    003-poems.knowledge.js      #   풍자 시 데이터(스키마+샘플) 단일 출처
+    004-clipboard.knowledge.js  #   복사 + 토스트
+    005-ui-kit.knowledge.js     #   아이콘 · 카드 · 편향바
+  units/                        # 기능 — 라우터에 매달림
+    001-feed.unit.js            #   피드(리스트/필터)         · view
+    002-detail.unit.js          #   상세 모달(원문/복사/닫기)  · overlay
+  app.js                        # 부트스트랩: 유닛 등록 + 전역 UI
 ```
+
+**새 기능 추가법**: `units/NNN-xxx.unit.js` 를 규칙대로 만들고 `app.js` 의 `register()` 에 한 줄 추가.
+
+## 📐 파일명 / 정리 규칙 (라우터에 고정)
+
+`000-convention.core.js` 에 상수로 못박아 둔 규칙 — 인터넷 표준(연구데이터 네이밍 가이드 · ISO 8601) 근거:
+
+- 형식 `NNN-<kebab-name>.<kind>.js` — `kind ∈ {core, knowledge, unit}`
+- 순번 **3자리 제로패딩** (`001`, `002` …) → 사전순 = 우선순위
+- 날짜는 **ISO 8601** (`YYYY-MM-DD`) → 사전순 = 시간순
+- **kebab-case**, 공백 금지, `[a-z0-9-]` 만 사용
+
+근거: [UConn RDM](https://guides.lib.uconn.edu/c.php?g=832372&p=8226285) · [Harvard HMS](https://datamanagement.hms.harvard.edu/plan-design/file-naming-conventions) · [NameQuick](https://www.namequick.app/blog/file-naming-conventions)
+
+## 🔄 변환 파이프라인
+
+원문 → (지침 `002-guidelines`) → 풍자 시 변환은 외부 파이프라인의 몫입니다.
+현재는 `003-poems` 의 샘플 데이터로 UI 를 시연하며, 동일 스키마로 데이터를 채우면 그대로 동작합니다.
 
 ## 🚀 로컬 실행
 
-ES 모듈을 쓰므로 정적 서버가 필요합니다 (`file://` 직접 열기 X):
-
 ```bash
-python3 -m http.server 8080
-# 또는
-npx serve .
+python3 -m http.server 8080   # 또는: npx serve .
 ```
-
-→ http://localhost:8080
+→ http://localhost:8080 (ES 모듈이라 정적 서버 필요)
 
 ## ☁️ 배포 (Cloudflare Pages)
 
-빌드 명령 없이 그대로 배포됩니다.
+빌드 명령 없이 배포됩니다.
 
-- **Build command:** *(비움)*
-- **Build output directory:** `/` (저장소 루트)
+| 항목 | 값 |
+|---|---|
+| Framework preset | `None` |
+| Build command | *(비움)* |
+| Build output directory | `/` |
 
 `_redirects` 가 모든 경로를 `index.html` 로 보내 클라이언트 라우팅을 처리합니다.
-
-## 🔌 데이터
-
-순수 클라이언트에서 [GitHub REST API](https://docs.github.com/rest)를 직접 호출합니다.
-백엔드·키 없이 동작하며, 한도가 부족하면 상단 🔒 버튼으로 읽기 전용 PAT을 등록하세요.
