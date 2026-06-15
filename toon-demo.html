@@ -3,141 +3,146 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>어휴게소 — 무채색 공감툰 시안</title>
+<title>어휴게소 — 무채색 모던 툰 시안 v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gaegu:wght@400;700&family=Nanum+Pen+Script&display=swap" />
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Pen+Script&display=swap" />
 <link rel="stylesheet" crossorigin
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <style>
   :root{
-    --ink:#1d1b18; --paper:#f6f5f1; --g1:#efeee9; --g2:#cfcdc6; --g3:#8d8a83;
-    --pen:"Nanum Pen Script", cursive;
-    --hand:"Gaegu", cursive;
-    --title:"Black Han Sans", sans-serif;
+    --ink:#171513; --paper:#f7f6f3; --g3:#8c8983; --g2:#c8c6c0; --hair:#e3e1db;
     --body:"Pretendard Variable", Pretendard, system-ui, sans-serif;
+    --display:"Black Han Sans", sans-serif;
+    --pen:"Nanum Pen Script", cursive;   /* 악센트로만 */
   }
   *{box-sizing:border-box; margin:0; padding:0}
-  body{
-    background:var(--paper); color:var(--ink); font-family:var(--body);
-    /* 아주 옅은 하프톤 점 — 무채색 종이 질감 */
-    background-image:radial-gradient(rgba(0,0,0,.05) 1px, transparent 1.4px);
-    background-size:14px 14px;
-    display:flex; justify-content:center; padding:26px 16px 60px;
-  }
-  .strip{ width:min(440px,100%); display:flex; flex-direction:column; gap:22px }
+  body{ background:var(--paper); color:var(--ink); font-family:var(--body);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+    display:flex; justify-content:center; padding:0 18px 72px; }
+  .wrap{ width:min(460px,100%) }
 
-  .tab{ font-family:var(--pen); font-size:20px; color:var(--g3); text-align:center; letter-spacing:.02em }
+  /* 마스트헤드 — 에디토리얼 */
+  .mast{ display:flex; justify-content:space-between; align-items:baseline;
+    padding:20px 2px 14px; border-bottom:1px solid var(--ink); }
+  .mast .mk{ font-family:var(--display); font-size:20px; letter-spacing:.01em }
+  .mast .meta{ font-size:11px; font-weight:600; letter-spacing:.18em; color:var(--g3); text-transform:uppercase }
 
-  /* 공감툰 '칸' — 먹선 + 단단한 그림자(스티커 느낌) */
-  .panel{
-    background:#fff; border:2.5px solid var(--ink); border-radius:20px;
-    box-shadow:6px 6px 0 var(--ink); padding:26px 22px; position:relative;
-  }
-  .panel.tilt{ transform:rotate(-1deg) }
+  .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.22em; color:var(--g3);
+    text-transform:uppercase; }
 
-  .doodle{ width:170px; height:170px; display:block; margin:2px auto 6px }
-  .doodle .fill{ fill:var(--g1) } .doodle .ln{ fill:none; stroke:var(--ink); stroke-width:4; stroke-linecap:round; stroke-linejoin:round }
-  .doodle .thin{ stroke-width:3 } .doodle .gray{ stroke:var(--g3) }
+  /* 히어로 */
+  .hero{ padding:48px 2px 30px; position:relative }
+  .hero .title{ font-family:var(--display); font-size:clamp(60px,20vw,92px);
+    line-height:.92; letter-spacing:-.01em; margin:12px 0 0 -2px }
+  .hero .hanja{ font-size:13px; font-weight:600; letter-spacing:.42em; color:var(--g3); margin-top:10px }
+  .hero .lede{ font-size:17px; font-weight:500; line-height:1.65; margin-top:22px; max-width:300px;
+    color:#34302c }
 
-  .title{ font-family:var(--title); font-size:54px; text-align:center; line-height:1; letter-spacing:.01em }
-  .hanja{ font-family:var(--pen); font-size:22px; color:var(--g3); text-align:center; margin-top:4px }
+  /* 라인아트 동글이 — 여백 크게, 악센트로 */
+  .art{ position:relative; margin:30px 0 8px; display:flex; justify-content:center }
+  .doodle{ width:150px; height:150px }
+  .doodle .ln{ fill:none; stroke:var(--ink); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round }
+  .doodle .soft{ stroke:var(--g3); stroke-width:2.6 }
+  .sfx{ position:absolute; font-family:var(--pen); font-size:34px; color:var(--g2);
+    top:-4px; right:18px; transform:rotate(6deg); pointer-events:none }
 
-  /* 말풍선 */
-  .bubble{
-    position:relative; margin:20px auto 0; max-width:300px;
-    background:#fff; border:2.5px solid var(--ink); border-radius:18px;
-    padding:14px 18px; font-family:var(--hand); font-weight:700; font-size:21px;
-    line-height:1.45; text-align:center;
-  }
-  .bubble::after{ content:""; position:absolute; left:46px; bottom:-13px;
-    width:18px; height:18px; background:#fff; border-right:2.5px solid var(--ink);
-    border-bottom:2.5px solid var(--ink); transform:rotate(45deg); }
+  /* CTA — 얇은 라인 필, 모던 */
+  .cta{ display:inline-flex; align-items:center; gap:10px; margin-top:14px;
+    font-size:15px; font-weight:700; color:var(--ink); text-decoration:none;
+    border:1.5px solid var(--ink); border-radius:999px; padding:12px 22px;
+    transition:background .15s, color .15s }
+  .cta:hover{ background:var(--ink); color:var(--paper) }
+  .cta span{ font-size:16px }
 
-  /* 만화 버튼 */
-  .cbtn{ display:block; width:fit-content; margin:24px auto 2px;
-    font-family:var(--hand); font-weight:700; font-size:20px; color:#fff;
-    background:var(--ink); border:2.5px solid var(--ink); border-radius:14px;
-    padding:11px 24px; box-shadow:4px 4px 0 var(--g2); cursor:pointer; }
+  /* 섹션 라벨 */
+  .seclabel{ display:flex; align-items:baseline; justify-content:space-between;
+    margin:46px 2px 4px; padding-bottom:10px; border-bottom:1px solid var(--ink) }
+  .seclabel .no{ font-family:var(--display); font-size:15px; color:var(--g2) }
 
-  /* 의성어 스티커 */
-  .sfx{ position:absolute; font-family:var(--pen); color:var(--g3);
-    pointer-events:none; line-height:.9 }
-  .sfx.s1{ top:-14px; right:8px; font-size:40px; transform:rotate(8deg); color:var(--ink) }
-  .sfx.s2{ bottom:10px; left:-6px; font-size:26px; transform:rotate(-10deg) }
+  /* 메뉴 — 에디토리얼 리스트 행 */
+  .row{ display:grid; grid-template-columns:48px 1fr auto; align-items:center; gap:16px;
+    padding:18px 2px }
+  .row + .row{ border-top:1px solid var(--hair) }
+  .row .cup{ width:48px; height:48px }
+  .row h3{ font-size:17px; font-weight:700; letter-spacing:-.01em }
+  .row .sub{ font-size:12.5px; color:var(--g3); margin-top:3px }
+  .row .star{ font-family:var(--pen); font-size:18px; color:var(--ink) }
+  .row .price{ font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap }
 
-  /* 메뉴 미니 칸 */
-  .menu{ display:flex; align-items:center; gap:16px }
-  .menu .cup{ width:74px; height:74px; flex:0 0 auto }
-  .menu h3{ font-family:var(--hand); font-weight:700; font-size:22px }
-  .menu .meta{ font-family:var(--pen); font-size:19px; color:var(--g3); margin-top:2px }
-  .dash{ border:0; border-top:2.5px dashed var(--g2); margin:16px 0 }
-  .price{ font-family:var(--pen); font-size:20px; display:flex; justify-content:space-between; color:var(--ink) }
-
-  .foot{ font-family:var(--pen); font-size:21px; text-align:center; color:var(--g3); margin-top:6px }
-  .tag-note{ text-align:center; font-family:var(--pen); color:var(--g2); font-size:16px; letter-spacing:.1em }
+  /* 푸터 */
+  .foot{ margin-top:54px; padding-top:18px; border-top:1px solid var(--ink);
+    display:flex; justify-content:space-between; align-items:center }
+  .foot .q{ font-family:var(--pen); font-size:21px; color:var(--ink) }
+  .foot .c{ font-size:11px; color:var(--g3); letter-spacing:.04em }
 </style>
 </head>
 <body>
-  <div class="strip">
+  <div class="wrap">
 
-    <p class="tab">전국퇴사자연합 직영 ✎</p>
+    <header class="mast">
+      <span class="mk">어휴게소</span>
+      <span class="meta">御休憩所 · 24H</span>
+    </header>
 
-    <!-- 히어로 칸 -->
-    <section class="panel tilt">
-      <span class="sfx s1">어휴…</span>
-      <span class="sfx s2">쓰읍—</span>
-
-      <!-- 직접 그린 동글이: 지쳐서 커피 든 직장인 -->
-      <svg class="doodle" viewBox="0 0 200 200" aria-hidden="true">
-        <!-- 몸통 -->
-        <path class="fill ln" d="M58 196 q-2 -52 42 -52 q44 0 42 52 Z"/>
-        <!-- 머리 -->
-        <circle class="fill ln" cx="100" cy="66" r="42"/>
-        <!-- 앞머리 삐침 -->
-        <path class="ln thin" d="M84 30 q6 -10 14 -3 M104 28 q8 -7 13 2"/>
-        <!-- 졸린 눈(반쯤 감김) -->
-        <path class="ln thin" d="M78 66 q8 7 16 0 M106 66 q8 7 16 0"/>
-        <!-- 입(작은 한숨) -->
-        <path class="ln thin" d="M92 88 q8 5 16 0"/>
-        <!-- 땀 한 방울 -->
-        <path class="ln thin gray" d="M142 52 q-7 9 0 14 q7 -5 0 -14 Z"/>
-        <!-- 커피컵 + 김 -->
-        <rect class="fill ln thin" x="120" y="132" width="30" height="24" rx="4"/>
-        <path class="ln thin gray" d="M128 124 q5 -7 0 -13 M140 124 q5 -7 0 -13"/>
-      </svg>
-
+    <section class="hero">
+      <p class="eyebrow">전국퇴사자연합 직영 · No.01</p>
       <h1 class="title">어휴게소</h1>
-      <p class="hanja">御 休 憩 所</p>
+      <p class="hanja">EOHYU-GESO</p>
+      <p class="lede">버티라고 안 합니다.<br>어휴, 잠깐 쉬었다 가세요.</p>
 
-      <div class="bubble">버티라고 안 함.<br>어휴, 잠깐 쉬었다 가셈</div>
-
-      <button class="cbtn">잠깐 들렀다 가기 →</button>
-    </section>
-
-    <p class="tab" style="font-size:17px">— 오늘의 메뉴 —</p>
-
-    <!-- 메뉴 미니 칸 -->
-    <section class="panel">
-      <span class="sfx s2" style="bottom:14px; right:14px; left:auto">끄덕끄덕</span>
-      <div class="menu">
-        <svg class="cup doodle" viewBox="0 0 100 100" aria-hidden="true">
-          <path class="ln thin gray" d="M40 22 q6 -9 0 -16 M56 22 q6 -9 0 -16"/>
-          <path class="fill ln" d="M28 30 h44 l-5 54 q-1 8 -9 8 h-16 q-8 0 -9 -8 Z"/>
-          <path class="ln thin" d="M72 40 q12 2 11 14 q-1 10 -12 10"/>
+      <div class="art">
+        <span class="sfx">어휴—</span>
+        <svg class="doodle" viewBox="0 0 200 200" aria-hidden="true">
+          <!-- 몸통(라인) -->
+          <path class="ln" d="M62 192 q-2 -46 38 -46 q40 0 38 46"/>
+          <!-- 머리 -->
+          <circle class="ln" cx="100" cy="70" r="40"/>
+          <!-- 졸린 눈 -->
+          <path class="ln" d="M80 70 q8 7 16 0 M104 70 q8 7 16 0"/>
+          <!-- 한숨 입 -->
+          <path class="ln" d="M93 90 q7 4 14 0"/>
+          <!-- 커피컵 + 김(연한 회색) -->
+          <rect class="ln" x="122" y="138" width="28" height="22" rx="4"/>
+          <path class="ln soft" d="M130 130 q5 -7 0 -12 M142 130 q5 -7 0 -12"/>
         </svg>
-        <div>
-          <h3>갓길 라떼 <span style="font-family:var(--pen);color:var(--g3)">(Hot)</span></h3>
-          <p class="meta">졸음 ★★★★★ · 원산지: 국내산 번아웃</p>
-        </div>
       </div>
-      <hr class="dash">
-      <p class="price"><span>가격</span><span>₩0 · 셀프</span></p>
+
+      <a class="cta" href="#">잠깐 들렀다 가기 <span>→</span></a>
     </section>
 
-    <p class="foot">버티지 말고, 들렀다 가세요.</p>
-    <p class="tag-note">무채색 공감툰 시안 · 캐릭터는 SVG로 직접 그림</p>
+    <div class="seclabel"><p class="eyebrow">오늘의 메뉴</p><span class="no">MENU</span></div>
+
+    <div class="row">
+      <svg class="cup doodle" viewBox="0 0 100 100" aria-hidden="true">
+        <path class="ln soft" d="M40 24 q6 -8 0 -15 M56 24 q6 -8 0 -15"/>
+        <path class="ln" d="M30 32 h40 l-4 48 q-1 7 -8 7 h-16 q-7 0 -8 -7 Z"/>
+        <path class="ln" d="M70 42 q11 1 10 13 q-1 9 -11 9"/>
+      </svg>
+      <div>
+        <h3>갓길 라떼 <span class="sub" style="font-weight:600">Hot</span></h3>
+        <p class="sub">국내산 번아웃 100% · <span class="star">졸음 ★★★★★</span></p>
+      </div>
+      <span class="price">₩0 · 셀프</span>
+    </div>
+
+    <div class="row">
+      <svg class="cup doodle" viewBox="0 0 100 100" aria-hidden="true">
+        <path class="ln" d="M26 40 h48 v8 q0 24 -10 30 h-28 q-10 -6 -10 -30 Z"/>
+        <path class="ln soft" d="M50 30 v-9 M40 33 l-4 -6 M60 33 l4 -6"/>
+      </svg>
+      <div>
+        <h3>비상등 정식</h3>
+        <p class="sub">야근 3스푼 · 무첨가: 야근수당</p>
+      </div>
+      <span class="price">₩0 · 셀프</span>
+    </div>
+
+    <footer class="foot">
+      <span class="q">버티지 말고, 들렀다 가세요.</span>
+      <span class="c">© 어휴게소</span>
+    </footer>
   </div>
 </body>
 </html>
