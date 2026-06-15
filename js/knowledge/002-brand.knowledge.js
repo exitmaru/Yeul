@@ -1,90 +1,92 @@
 // =========================================================
 // knowledge/002-brand.knowledge.js
-// 공통 지식 — EXIT : MARU 브랜드/카피의 단일 출처.
-//   영화 「탈예울(脫例蔚)」 프로모션 톤. 모든 unit 이 참조.
+// 공통 지식 — 「어휴게소」 브랜드/카피의 단일 출처.
+//   인생 고속도로 위의 휴게소 톤. 모든 unit 이 참조.
+//   (어휴 + 휴게소 — 달리다 지쳐 잠깐 빠져나오는 곳. 바닥엔 위로.)
 // =========================================================
 
 export const BRAND = Object.freeze({
-  titleKo: "탈예울",
-  titleHanja: "脫例蔚",
-  titleRoman: "TAL-YEUL",
-  appName: "EXIT : MARU",
-  subtitle: "탈출하라, 무너져 가는 예울마루에서",
-  logline: "전국의 퇴사자를 위로하기 위해, 내가 먼저 퇴사한다.",
+  titleKo: "어휴게소",
+  titleHanja: "御休憩所",
+  titleRoman: "EOHYU-GESO",
+  appName: "어휴게소",
+  subtitle: "인생 고속도로 위, 어휴 한숨 한 번 쉬었다 가는 곳",
+  logline: "버티라고 안 합니다. 어휴, 잠깐 쉬었다 가세요.",
   taglines: [
-    "그것은 더 이상 권고가 아니다.",
-    "사직(辭職)이 아니라 탈출(脫出)이다.",
-    "무너져 가는 예울마루에서, 가장 먼저 문을 연 사람.",
-    "오늘, 당신의 자리는 비어 있어도 괜찮다.",
+    "여기선 아무도 ‘더 달리라’고 하지 않는다.",
+    "졸리면 졸음쉼터, 지치면 어휴게소.",
+    "출구(IC)는 늘 오른쪽에 있다 — 빠져나가도 괜찮다.",
+    "한숨도 휴식이다. 어휴, 하고 크게 한 번.",
   ],
   synopsis:
-    "모두가 버티는 것을 미덕이라 부르던 시절, 한 사람이 조용히 사직서를 꺼냈다. " +
-    "무너져 가는 예울마루 빌딩, 그 18층 사무실에서 시작된 작은 균열은 곧 전국으로 번진다. " +
-    "그는 영웅이 되려던 것이 아니었다 — 다만 가장 먼저 문을 열었을 뿐. " +
-    "「탈예울」, 그것은 더 이상 권고가 아니라 선언이다.",
+    "모두가 액셀만 밟던 시절, 한 사람이 처음으로 갓길에 차를 세웠다. " +
+    "비상등을 켜고, 창문을 내리고, 어휴 — 하고 길게 숨을 뱉었다. " +
+    "그 한숨은 곧 옆 차선으로, 뒤차로, 전국의 정체 구간으로 번졌다. " +
+    "그는 길을 막으려던 게 아니었다 — 다만 가장 먼저 깜빡이를 켰을 뿐. " +
+    "어휴게소, 그건 게으름이 아니라 정비(整備)다.",
   release: {
-    main: "전국 동시 퇴사 — COMING SOON",
-    sub: "예매 불가. 좌석은 당신이 비우는 그 자리뿐.",
-    rating: "12세 관람가 · 러닝타임: 당신의 남은 근속연수",
+    main: "24시간 영업 · 연중무휴 — 지금 영업 중",
+    sub: "입장료 없음. 자리는 당신이 잠깐 비우는 그 갓길 하나뿐.",
+    rating: "전 좌석 이용가 · 권장 체류시간: 어휴 한숨 한 번",
   },
 });
 
 export const CTA = Object.freeze({
-  primary: "지금 탈출하기",
-  trailer: "예고편 보기",
-  resign: "사직서 미리보기",
+  primary: "잠깐 들렀다 가기",
+  trailer: "안내방송 듣기",
+  resign: "출구 미리보기",
 });
 
 export const AUDIENCE = Object.freeze([
   {
     icon: "battery",
-    title: "번아웃 직장인",
-    desc: "월요일이 일요일 밤부터 시작되는 당신. 열정은 진작 소진됐지만 관성으로 출근 도장을 찍고 있다면, 이 영화의 1막은 당신의 이야기입니다.",
+    title: "졸음운전 직전의 직장인",
+    desc: "월요일이 일요일 밤부터 시작되는 당신. 눈꺼풀은 천근, 핸들은 무겁고, 갓길은 안 보이고. 사고 나기 전에 — 여기, 어휴게소에 한 번 들르세요.",
   },
   {
     icon: "draft",
-    title: "사직서를 만지작거리는 사람",
-    desc: "쓰지도, 버리지도 못한 사직서가 서랍 어딘가에 있나요. 당신은 이미 2막을 살고 있습니다. 필요한 건 용기가 아니라, 첫 문장뿐입니다.",
+    title: "깜빡이를 켤까 말까 하는 사람",
+    desc: "나들목은 보이는데 깜빡이를 못 켜는 당신. 빠져나가도 길은 또 있습니다. 필요한 건 용기가 아니라, 깜빡이 한 번입니다.",
   },
   {
     icon: "exit",
-    title: "이미 퇴사한 사람",
-    desc: "당신은 엔딩 크레딧을 본 사람입니다. 잘했습니다, 정말로. 이 영화는 당신을 위한 헌사이자, 다음 사람을 위한 등불입니다.",
+    title: "이미 빠져나온 사람",
+    desc: "이미 출구로 빠져 국도를 달리는 당신. 잘했습니다, 정말로. 느려도 풍경은 이쪽이 낫습니다. 천천히 가세요.",
   },
 ]);
 
 export const FAQ = Object.freeze([
-  { q: "이 영화, 실화인가요?", a: "전국 어딘가에서 매일 상영 중인 다큐멘터리입니다. 주연만 매번 바뀔 뿐입니다." },
-  { q: "예매는 어떻게 하나요?", a: "예매는 불가능합니다. 좌석은 오직 당신이 책상을 비우는 그 자리 하나뿐입니다." },
-  { q: "해피엔딩인가요?", a: "엔딩은 당신이 직접 씁니다. 다만 한 가지는 약속드립니다 — 문은, 언제나 안에서 열립니다." },
+  { q: "여기 진짜 휴게소예요?", a: "전국 어디에나 있고, 매일 누군가 들릅니다. 다만 파는 건 호두과자가 아니라, 한숨 한 번 돌릴 여유입니다." },
+  { q: "이용료가 있나요?", a: "공짜입니다. 자리는 당신이 잠깐 차를 세우는 그 갓길 하나뿐이고요." },
+  { q: "다시 고속도로로 돌아가야 하나요?", a: "그건 당신이 정합니다. 다만 하나는 약속해요 — 출구(IC)는, 언제나 오른쪽에 있습니다." },
 ]);
 
 export const FOOTER =
-  "EXIT : MARU © 2026 전국퇴사자연합 · 「탈예울(脫例蔚)」 · 그것은 더 이상 권고가 아니다.";
+  "어휴게소 © 2026 전국퇴사자연합 · 인생 고속도로 어휴게소(상행) · 어휴, 쉬었다 가세요.";
 
 // 사용자가 직접 생성할 이미지용 프롬프트 (영어, 시네마틱)
 export const IMAGE_PROMPTS = Object.freeze([
   {
-    use: "히어로 메인 포스터",
+    use: "히어로 메인 — 밤의 휴게소",
     prompt:
-      "Cinematic movie poster, a lone office worker in a wrinkled suit standing at the threshold of a glowing emergency exit, backlit by warm golden light pouring in, while a vast dark cobalt-blue office of empty desks stretches behind in shadow. Dramatic chiaroscuro lighting, 35mm film grain, anamorphic lens flare, epic and solemn yet hopeful mood, teal-and-orange contrast, volumetric god rays, vertical poster composition with empty space at top for title typography. Highly detailed, photorealistic, dystopian corporate aesthetic.",
+      "Cinematic wide shot of a lone highway rest area glowing warm amber at night beside a dark empty expressway, a big retro illuminated '휴게소' style sign, one tired traveler standing alone under the canopy lights with a paper coffee cup, deep cobalt-blue night sky, warm sodium-vapor glow versus cold blue shadows, 35mm film grain, anamorphic lens flare, melancholic yet comforting mood, teal-and-orange contrast, vertical poster composition with empty space at top for title, photorealistic, nostalgic Korean roadside aesthetic.",
   },
   {
-    use: "스크롤 배경 텍스처",
+    use: "스크롤 배경 — 텅 빈 고속도로",
     prompt:
-      "Atmospheric wide shot of a crumbling modern office tower at night, half the windows dark and one single window glowing cold blue on the 18th floor, deep cobalt-blue and midnight tones, faint fog and rain, distant city lights bokeh, melancholic cinematic stillness, 35mm film texture, muted desaturated palette, moody noir lighting, ultra-wide aspect ratio.",
+      "Atmospheric ultra-wide night shot of an empty Korean expressway stretching into darkness, faint red tail-lights bokeh trailing away, a distant rest-area sign glowing warm on the horizon, deep cobalt and midnight tones, light fog and drizzle, melancholic cinematic stillness, 35mm film texture, muted desaturated palette, moody noir lighting.",
   },
   {
-    use: "장면 카드 — 사직서",
+    use: "메뉴 카드 — 자판기 커피",
     prompt:
-      "Extreme close-up of a hand placing a single white resignation letter on an empty dark wooden desk, a brass employee ID badge lying beside it, dramatic single-source light from a window casting long shadows, dust particles floating in the beam, deep cobalt-blue shadows and warm highlight, 35mm macro film photography, solemn and liberating mood, shallow depth of field, cinematic color grading.",
+      "Extreme close-up of a paper cup of vending-machine coffee steaming on a worn stainless rest-area table under cold fluorescent light, blurred neon snack signs in the background, dust and steam catching the light, deep cobalt shadows with a warm highlight, 35mm macro film photography, lonely but cozy late-night mood, shallow depth of field, cinematic color grading, nostalgic Korean rest stop.",
   },
   {
-    use: "엔딩 / CTA — 탈출의 순간",
+    use: "엔딩 / CTA — 출구로 빠지는 순간",
     prompt:
-      "An office worker walking out of a glass lobby into blinding morning sunlight, seen from behind as a silhouette, briefcase abandoned on the floor behind them, the dark cold office contrasting with the warm bright outside world, lens flare and golden hour glow, sense of release and freedom and rebirth, 35mm cinematic film still, epic and emotional, cobalt-blue interior fading into warm exterior light, vertical composition, photorealistic.",
+      "A single car taking the exit ramp off a dark highway into blinding warm morning light, seen from behind, the cold grey expressway fading behind while a bright open country road opens ahead, lens flare and golden hour glow, sense of release and relief and a fresh start, 35mm cinematic film still, emotional, cobalt-blue highway fading into warm exterior light, vertical composition, photorealistic.",
   },
 ]);
 
-// 막(Act) 필터에 사용
+// 막(구간) 필터에 사용
 export const ACTS = Object.freeze(["전체", "1막", "2막", "3막"]);

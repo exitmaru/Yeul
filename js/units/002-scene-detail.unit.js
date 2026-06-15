@@ -79,8 +79,8 @@ function render({ mount, params, router }) {
 
   const prev = adjacentScene(id, -1);
   const next = adjacentScene(id, 1);
-  const copyPoem = `${s.title}\n\n${s.poem}\n\n— 「탈예울」 ${s.act} · SCENE ${s.id}`;
-  const copyAll = `[원문]\n${s.source}\n\n[시]\n${s.poem}\n\n— 「탈예울」 ${s.act} · SCENE ${s.id}`;
+  const copyPoem = `${s.title}\n\n${s.poem}\n\n— 어휴게소 ${s.act} · SCENE ${s.id}`;
+  const copyAll = `[원문]\n${s.source}\n\n[시]\n${s.poem}\n\n— 어휴게소 ${s.act} · SCENE ${s.id}`;
 
   mount.innerHTML = `
     <div class="modal-backdrop" data-close></div>

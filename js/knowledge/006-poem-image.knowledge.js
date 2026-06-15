@@ -82,7 +82,7 @@ export async function renderPoemCanvas(scene) {
   // 헤더
   ctx.fillStyle = "#5b8cff";
   ctx.font = `700 30px ${SANS}`;
-  ctx.fillText("「탈예울」  脫例蔚", W / 2, 152);
+  ctx.fillText("어휴게소  御休憩所", W / 2, 152);
   ctx.fillStyle = "#62718f";
   ctx.font = `600 24px ${SANS}`;
   ctx.fillText(`${scene.act} · SCENE ${scene.id} · ${scene.category}`, W / 2, 196);
@@ -113,10 +113,10 @@ export async function renderPoemCanvas(scene) {
   // 푸터
   ctx.fillStyle = "#ffcf8a";
   ctx.font = `700 27px ${SANS}`;
-  ctx.fillText("그것은 더 이상 권고가 아니다.", W / 2, 1222);
+  ctx.fillText("어휴, 쉬었다 가세요.", W / 2, 1222);
   ctx.fillStyle = "#7e8aa6";
   ctx.font = `700 24px ${SANS}`;
-  ctx.fillText("EXIT : MARU", W / 2, 1266);
+  ctx.fillText("어휴게소", W / 2, 1266);
 
   return cv;
 }

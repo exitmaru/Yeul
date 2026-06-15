@@ -1,6 +1,6 @@
 // =========================================================
 // units/001-landing.unit.js
-// 유닛 — 「탈예울」 영화 프로모션 원페이지. 라우터 view 레이어.
+// 유닛 — 「어휴게소」 원페이지. 라우터 view 레이어.
 //   히어로 → 마퀴 → 시놉시스 → 관객 → 장면 → FAQ → 푸터.
 //   막(Act) 필터·스크롤 리빌은 유닛 내부에서 관리.
 // =========================================================
@@ -13,7 +13,7 @@ import { observeReveals } from "../knowledge/007-reveal.knowledge.js";
 const state = { act: "전체" };
 let router;
 
-const MARQUEE = ["탈예울 脫例蔚", "그것은 더 이상 권고가 아니다", "전국 동시 퇴사", "COMING SOON", "사직이 아니라 탈출이다"];
+const MARQUEE = ["어휴게소 御休憩所", "여기선 더 달리라고 안 합니다", "24시간 영업 · 연중무휴", "어휴 — 한숨 한 번", "졸리면 졸음쉼터, 지치면 어휴게소"];
 
 const SOCIAL = {
   x: `<svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.3 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2l7.8-8.9L1.5 2H8l4.7 6.2L18.9 2zm-2.3 18h1.8L7.2 4H5.3l11.3 16z"/></svg>`,
@@ -47,7 +47,7 @@ function render({ mount, router: r }) {
     <!-- HERO -->
     <section class="hero">
       <div class="hero-bg" aria-hidden="true"></div>
-      <span class="eyebrow center reveal">전국퇴사자연합 presents</span>
+      <span class="eyebrow center reveal">전국퇴사자연합 직영</span>
       <h1 class="hero-title reveal">
         <span class="ko">${esc(BRAND.titleKo)}</span>
         <span class="hanja">${esc(BRAND.titleHanja)}</span>
@@ -63,9 +63,9 @@ function render({ mount, router: r }) {
       <figure class="poster reveal" role="img" aria-label="메인 포스터">
         <img src="/assets/images/001-hero-poster.webp" alt="" loading="lazy" />
         <div class="poster-inner">
-          <span class="poster-tag">KEY ART</span>
+          <span class="poster-tag">휴게소 전경</span>
           <p class="poster-quote gungseo">“${esc(BRAND.taglines[0])}”</p>
-          <span class="poster-note">메인 포스터 (교체 가능)</span>
+          <span class="poster-note">간판 사진 (교체 가능)</span>
         </div>
       </figure>
     </section>
@@ -75,7 +75,7 @@ function render({ mount, router: r }) {
 
     <!-- SYNOPSIS -->
     <section class="band" id="synopsis">
-      <div>${sectionHead("SYNOPSIS", "시놉시스", "")}</div>
+      <div>${sectionHead("ABOUT", "어휴게소 안내문", "")}</div>
       <p class="synopsis reveal">${esc(BRAND.synopsis)}</p>
       <div class="taglines reveal">
         ${BRAND.taglines.map((t) => `<p class="tagline gungseo">${esc(t)}</p>`).join("")}
@@ -84,7 +84,7 @@ function render({ mount, router: r }) {
 
     <!-- WHO'S IT FOR -->
     <section class="band" id="audience">
-      <div>${sectionHead("WHO'S IT FOR", "이런 당신에게", "")}</div>
+      <div>${sectionHead("WHO'S IT FOR", "이런 운전자에게", "")}</div>
       <div class="aud-grid">
         ${AUDIENCE.map((a) => `
           <article class="aud-card reveal zoom">
@@ -97,7 +97,7 @@ function render({ mount, router: r }) {
 
     <!-- SCENES -->
     <section class="band" id="scenes">
-      <div>${sectionHead("SCENES", "원문과 시, 여섯 개의 장면", "직장의 한 컷이 원문이 되고, 그 옆에 시가 선다. 한 장면을 열어 전문을 읽고, 복사하거나 이미지로 저장하세요.")}</div>
+      <div>${sectionHead("MENU", "오늘의 메뉴 — 여섯 가지 위로", "직장의 한 컷을 한 접시에 담았다. 원문 옆에 시가 한 그릇 따라온다. 하나 골라 열어 전문을 읽고, 마음에 들면 복사하거나 이미지로 담아 가세요.")}</div>
       <div class="act-tabs reveal" role="tablist">
         ${ACTS.map((a) => `<button class="act-tab${a === state.act ? " on" : ""}" data-act="${esc(a)}" role="tab">${esc(a)}</button>`).join("")}
       </div>
@@ -120,21 +120,21 @@ function render({ mount, router: r }) {
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="f-mark">EXIT <b>: MARU</b></div>
+          <div class="f-mark">어휴게소 <b>御休憩所</b></div>
           <p>${esc(BRAND.logline)}</p>
           <p class="gungseo">${esc(BRAND.taglines[0])}</p>
         </div>
         <div class="footer-col">
-          <h4>작품</h4>
-          <a href="#synopsis">시놉시스</a>
-          <a href="#scenes">장면</a>
+          <h4>둘러보기</h4>
+          <a href="#synopsis">안내문</a>
+          <a href="#scenes">메뉴</a>
           <a href="#faq">FAQ</a>
         </div>
         <div class="footer-col">
           <h4>바로가기</h4>
-          <span data-open="001">예고편 보기</span>
-          <a href="#scenes">지금 탈출하기</a>
-          <a href="#audience">이런 당신에게</a>
+          <span data-open="001">안내방송 듣기</span>
+          <a href="#scenes">메뉴 보기</a>
+          <a href="#audience">이런 운전자에게</a>
         </div>
         <div class="footer-col">
           <h4>정보</h4>
