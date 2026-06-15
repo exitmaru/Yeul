@@ -13,7 +13,7 @@ import { observeReveals } from "../knowledge/007-reveal.knowledge.js";
 const state = { act: "전체" };
 let router;
 
-const MARQUEE = ["어휴게소 御休憩所", "여기선 더 달리라고 안 합니다", "24시간 영업 · 연중무휴", "어휴 — 한숨 한 번", "졸리면 졸음쉼터, 지치면 어휴게소"];
+const MARQUEE = ["어휴 — 어휴 — 어휴", "여기선 존버 강요 없음", "출구는 저쪽 →", "안 달려도 인생 안 망함", "깜빡이 켜도 됨", "한숨 1회 무료", "24시간 영업 · 연중무휴"];
 
 const SOCIAL = {
   x: `<svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.3 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2l7.8-8.9L1.5 2H8l4.7 6.2L18.9 2zm-2.3 18h1.8L7.2 4H5.3l11.3 16z"/></svg>`,
@@ -75,7 +75,7 @@ function render({ mount, router: r }) {
 
     <!-- SYNOPSIS -->
     <section class="band" id="synopsis">
-      <div>${sectionHead("ABOUT", "어휴게소 안내문", "")}</div>
+      <div>${sectionHead("종합안내소", "여기 뭐 하는 데냐면", "")}</div>
       <p class="synopsis reveal">${esc(BRAND.synopsis)}</p>
       <div class="taglines reveal">
         ${BRAND.taglines.map((t) => `<p class="tagline gungseo">${esc(t)}</p>`).join("")}
@@ -84,7 +84,7 @@ function render({ mount, router: r }) {
 
     <!-- WHO'S IT FOR -->
     <section class="band" id="audience">
-      <div>${sectionHead("WHO'S IT FOR", "이런 운전자에게", "")}</div>
+      <div>${sectionHead("졸음쉼터", "이런 운전자, 여기서 쉬어가요", "")}</div>
       <div class="aud-grid">
         ${AUDIENCE.map((a) => `
           <article class="aud-card reveal zoom">
@@ -97,7 +97,7 @@ function render({ mount, router: r }) {
 
     <!-- SCENES -->
     <section class="band" id="scenes">
-      <div>${sectionHead("MENU", "오늘의 메뉴 — 여섯 가지 위로", "직장의 한 컷을 한 접시에 담았다. 원문 옆에 시가 한 그릇 따라온다. 하나 골라 열어 전문을 읽고, 마음에 들면 복사하거나 이미지로 담아 가세요.")}</div>
+      <div>${sectionHead("푸드코트", "오늘의 메뉴 — 여섯 가지 위로", "직장의 한 컷을 한 접시에 담았다. 원문 옆에 시가 한 그릇 따라온다. 하나 골라 열어 전문을 읽고, 마음에 들면 복사하거나 이미지로 담아 가세요. 전부 ₩0 · 셀프.")}</div>
       <div class="act-tabs reveal" role="tablist">
         ${ACTS.map((a) => `<button class="act-tab${a === state.act ? " on" : ""}" data-act="${esc(a)}" role="tab">${esc(a)}</button>`).join("")}
       </div>
@@ -106,7 +106,7 @@ function render({ mount, router: r }) {
 
     <!-- FAQ -->
     <section class="band" id="faq">
-      <div>${sectionHead("FAQ", "자주 묻는 질문", "")}</div>
+      <div>${sectionHead("고객센터", "자주 묻는 한숨", "")}</div>
       <div class="faq reveal">
         ${FAQ.map((f) => `
           <details class="faq-item">
