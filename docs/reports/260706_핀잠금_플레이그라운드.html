@@ -202,7 +202,7 @@
   <div class="eyebrow">EXIT : MARU · 시안</div>
   <h1>PIN 잠금 화면 — 만져보는 시안</h1>
   <p class="lead">nomute-editor 잠금 화면의 <b style="color:#fff">동그라미 채움 뉘앙스</b>를 Yeul 코발트로 이식 · 숫자 키패드라 <b style="color:#fff">CapsLock 자체가 없음</b> · 글래스는 아래에서 골라봐.</p>
-  <p class="stamp">폰에서 바로 눌러볼 수 있어. 아래 키패드를 두들기면 동그라미가 차오르고, 데모 PIN을 맞추면 잠금이 풀려.</p>
+  <p class="stamp">폰에서 바로 눌러볼 수 있어. 아래 키패드를 두들기면 동그라미가 차오르고, PIN(0000)을 맞추면 잠금이 풀려.</p>
 
   <!-- ① 실물 재현 미리보기 -->
   <div class="stagewrap">
@@ -263,7 +263,7 @@
   <!-- ⑤ 각주 -->
   <div class="foot">
     <b>재현 한계 / 메모</b><br>
-    · 데모 PIN = <span class="hintpin">2 4 8 1</span> — 맞추면 성공 스윕→언락, 틀리면 흔들림(실제 페이지엔 진짜 PIN 검증·5회 잠금 로직을 붙임).<br>
+    · PIN = <span class="hintpin">0 0 0 0</span> (현재 설정값) — 맞추면 성공 스윕→언락, 틀리면 흔들림. 나중에 실제로 쓸 땐 이 값·5회 잠금 로직을 페이지에 붙이면 돼.<br>
     · 실제 폰트(Plus Jakarta Sans·Pretendard)는 시스템 폴백으로 근사 — 실기기에선 조금 더 또렷함.<br>
     · 글래스(backdrop-filter)는 <b>뒤에 텍스처가 있어야</b> 살아나서, 배경에 Yeul 히어로(코발트 메시+블롭)를 깔아 재현함.<br>
     · nomute 원본은 키패드를 매번 <b>섞어서</b> 보여줌(보안). 여긴 프로모션 사이트라 <b>일반 배열</b>로 뒀는데, 원하면 섞기도 켤 수 있어.<br>
@@ -274,7 +274,7 @@
 <script>
 (function(){
   "use strict";
-  var DEMO_PIN = "2481", LEN = 4;
+  var DEMO_PIN = "0000", LEN = 4;   // 설정 비밀번호(운영자 260706 · 나중 재사용 대비 고정)
   var root = document.getElementById('lockroot');
   var slotsEl = document.getElementById('lkslots');
   var wrapEl = document.getElementById('lkslotwrap');
