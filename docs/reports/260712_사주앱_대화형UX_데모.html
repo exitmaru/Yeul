@@ -30,7 +30,7 @@
     border-radius:28px; overflow:hidden; border:1px solid rgba(255,255,255,.08);
     box-shadow:0 24px 70px rgba(0,0,0,.55);
     background:linear-gradient(180deg,#0b0b0d 0%,#0e0d10 55%,#131114 100%);
-    display:flex; flex-direction:column; user-select:none;
+    display:flex; flex-direction:column; user-select:none; color:var(--ink);
   }
   @media (max-width:480px){ body{padding:0} .stage{width:100%} .app{height:100vh;height:100dvh;border-radius:0;min-height:100vh} }
 
@@ -42,6 +42,36 @@
   .bg .cat{position:absolute;bottom:31%;left:7%;width:44px;height:26px;border-radius:14px 16px 8px 8px;background:#08080a;opacity:.9}
   .bg .cat::before,.bg .cat::after{content:"";position:absolute;top:-7px;border-style:solid;border-width:0 5px 9px 5px;border-color:transparent transparent #08080a transparent}
   .bg .cat::before{left:5px}.bg .cat::after{left:19px}
+  .bg .mts{position:absolute;left:-10%;right:-10%;bottom:24%;height:30%;display:none;filter:blur(5px);
+    background:
+      radial-gradient(52% 90% at 22% 100%, rgba(90,76,60,.28), transparent 62%),
+      radial-gradient(60% 100% at 62% 100%, rgba(58,49,40,.2), transparent 64%),
+      radial-gradient(46% 80% at 92% 100%, rgba(90,76,60,.16), transparent 60%)}
+
+  /* ── 한지·수묵 테마 (토정비결·FACETELLER류 레퍼런스 결 — 🎨 토글) ── */
+  .app[data-theme="hanji"]{
+    --ink:#3a3128; --sub:rgba(58,49,40,.6);
+    --glass-bg:rgba(255,253,246,.72); --glass-brd:rgba(90,70,40,.26);
+    --accent:#b0402b; --accent-ink:#fff9ef; --accent-soft:rgba(176,64,43,.1);
+    background:linear-gradient(180deg,#f5efe0 0%,#f1e9d5 55%,#eadfc6 100%)}
+  .app[data-theme="hanji"] .bg .mts{display:block}
+  .app[data-theme="hanji"] .bg .glow{background:radial-gradient(62% 72% at 50% 100%,rgba(176,64,43,.07),transparent 70%)}
+  .app[data-theme="hanji"] .bg .gye{color:rgba(58,49,40,.05)}
+  .app[data-theme="hanji"] .bg .cat{background:#3a3128;opacity:.75}
+  .app[data-theme="hanji"] .bg .cat::before,.app[data-theme="hanji"] .bg .cat::after{border-color:transparent transparent #3a3128 transparent}
+  .app[data-theme="hanji"] .dialog,.app[data-theme="hanji"] .panel{background:#fffdf6;box-shadow:0 8px 26px rgba(90,70,40,.18)}
+  .app[data-theme="hanji"] .panel input{background:rgba(90,70,40,.05)}
+  .app[data-theme="hanji"] .heart .bar,.app[data-theme="hanji"] .ohang .track{background:rgba(90,70,40,.12)}
+  .app[data-theme="hanji"] .pillars .g{background:rgba(255,253,246,.6)}
+  .app[data-theme="hanji"] .paljaStage{background:rgba(240,233,216,.86)}
+  .app[data-theme="hanji"] .cf{background:#f7f1e2}
+  .app[data-theme="hanji"] .cf::after{color:rgba(58,49,40,.25)}
+  .app[data-theme="hanji"] .cb{background:#fffdf6}
+  .app[data-theme="hanji"] .resultWrap{background:rgba(236,228,208,.62)}
+  .app[data-theme="hanji"] .rcard{background:#fffdf6;box-shadow:0 16px 40px rgba(90,70,40,.24)}
+  .app[data-theme="hanji"] .drawer .sheet,.app[data-theme="hanji"] .modal .box{background:#f6f0e1;color:#3a3128}
+  .app[data-theme="hanji"] .toastbar{background:#fffdf6;color:#3a3128}
+  .app[data-theme="hanji"] .foot{color:rgba(58,49,40,.45)}
 
   /* ── 유리 패널 공통 ── */
   .glass{background:var(--glass-bg);border:1px solid var(--glass-brd);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur))}
@@ -232,6 +262,22 @@
   .sheet .close{width:100%;margin-top:16px}
   .foot{position:absolute;left:0;right:0;bottom:0;z-index:4;text-align:center;font-size:10px;color:rgba(242,240,236,.4);padding:4px}
 
+  /* ── 책 표지 오프닝 ── */
+  .coverWrap{position:absolute;inset:0;z-index:14;display:flex;align-items:center;justify-content:center;padding:26px;
+    background:linear-gradient(180deg,#0b0b0d 0%,#111013 60%,#16130f 100%)}
+  .app[data-theme="hanji"] .coverWrap{background:linear-gradient(180deg,#f5efe0 0%,#f1e9d5 55%,#e8dcc0 100%)}
+  .coverWrap.hide{display:none}
+  .cover{position:relative;width:100%;max-width:300px;border:1.5px solid var(--glass-brd);border-radius:6px;
+    padding:34px 22px 24px;text-align:center;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur))}
+  .cover::before{content:"";position:absolute;inset:5px;border:1px solid var(--glass-brd);border-radius:3px;pointer-events:none}
+  .cover .eyebrow2{font-size:11px;letter-spacing:.22em;color:var(--accent);font-weight:800;margin-bottom:14px}
+  .cover h1{margin:0 0 4px;font-family:"Gungsuh","GungsuhChe","Nanum Myeongjo",serif;font-size:34px;line-height:1.3;letter-spacing:.06em;font-weight:700}
+  .cover .ed{font-size:11px;color:var(--sub);letter-spacing:.14em;margin-bottom:18px}
+  .cover .orb2{width:64px;height:64px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+    font-family:serif;font-size:27px;font-weight:800;color:var(--accent-ink);background:var(--accent);box-shadow:0 0 0 3px var(--glass-bg),0 0 0 4px var(--accent)}
+  .cover q{display:block;font-size:14px;line-height:1.7;margin-bottom:4px;quotes:"“" "”"}
+  .cover .by{font-size:11.5px;color:var(--sub);margin-bottom:18px}
+  .cover .cta{margin-top:0}
   .modal{position:absolute;inset:0;z-index:22;display:none;background:rgba(8,8,10,.6);align-items:center;justify-content:center;padding:22px}
   .modal.show{display:flex}
   .modal .box{background:#161619;border:1px solid var(--glass-brd);border-radius:18px;padding:20px;max-height:80%;overflow-y:auto;font-size:13px;line-height:1.7}
@@ -243,11 +289,12 @@
 <div class="stage">
   <div class="app" id="app" data-bubble="box" data-pos="center">
 
-    <div class="bg"><div class="glow"></div><div class="gye">契</div><div class="sun"></div><div class="cat"></div></div>
+    <div class="bg"><div class="glow"></div><div class="gye">契</div><div class="sun"></div><div class="mts"></div><div class="cat"></div></div>
 
     <div class="hud">
       <span class="brandtag"><b>契路神</b> 사주 · 꼬미 DEMO</span>
       <span class="heart" id="heartBox">🖤 <span class="bar"><i id="heartFill"></i></span><span id="heartVal">0</span></span>
+      <button id="btnTheme" title="글래스 ⇄ 한지 전환">🎨</button>
       <button id="btnInfo" title="재현 한계 각주">ⓘ</button>
       <button id="btnSet" title="연출 설정">⚙</button>
       <div class="pillars" id="pillars"></div>
@@ -288,6 +335,16 @@
 
     <div class="resultWrap" id="resultWrap"><div class="rcard" id="rcard"></div></div>
 
+    <div class="coverWrap" id="coverWrap"><div class="cover">
+      <div class="eyebrow2">丙午年 길흉화복 · 契路神 만세력</div>
+      <h1>꼬미의<br>사주첩</h1>
+      <div class="ed">보조 꼬미 銘 · 對話本 DEMO</div>
+      <div class="orb2">契</div>
+      <q>복채는 됐고. — 네 팔자나 한번 보자.</q>
+      <div class="by">냉정하게, 그래도 다정하게</div>
+      <button class="cta" id="coverOpen">책 펼치기</button>
+    </div></div>
+
     <div class="drawer" id="drawer"><div class="sheet" id="sheet"></div></div>
     <div class="modal" id="modal"><div class="box">
       <h3>재현 한계 각주 (정직 모드)</h3>
@@ -315,7 +372,7 @@
   /* ── 설정 ── */
   var SET = {
     typeMs: FAST?0:34, autoAdv: FAST?1:0, autoDelay:1100, transMs: FAST?120:480,
-    tsun:2, clumsy:1, fs:1, bubble:"box", pos:"center", heartOn:1, pulse:1
+    tsun:2, clumsy:1, fs:1, bubble:"box", pos:"center", heartOn:1, pulse:1, theme:"glass"
   };
 
   /* ── 게임 상태 ── */
@@ -346,6 +403,7 @@
       ask:"태어난 시간은?", sub:"모르면 모른다고 해. …혼 안 내.", cta:"다음", demo:"08:30"},
     {id:"in_name", type:"input", kind:"name", exp:"neutral",
       ask:"뭐라고 부를까?", sub:"본명 아니어도 돼.", cta:"이렇게 불러", demo:"탈주닌자"},
+    {id:"confirm", type:"confirm"},
     {id:"calc", type:"palja"},
     {id:"oops", type:"say", exp:"panic", gate:"clumsy1", lines:[
       {t:"…어라. 잠깐."},
@@ -398,7 +456,7 @@
     var r=document.documentElement.style;
     r.setProperty("--fs",SET.fs);
     r.setProperty("--t",SET.transMs+"ms");
-    app.dataset.bubble=SET.bubble; app.dataset.pos=SET.pos;
+    app.dataset.bubble=SET.bubble; app.dataset.pos=SET.pos; app.dataset.theme=SET.theme;
     $("heartBox").style.display = SET.heartOn? "flex":"none";
   }
   function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("show");
@@ -500,10 +558,31 @@
     input.addEventListener("input",sync);
     cta.addEventListener("click",function(){
       pulse();
+      if(sc.kind==="date") G.birth=input.value;
       if(sc.kind==="name") G.name=(input.value||"손님").trim();
-      if(sc.kind==="time") G.timeUnknown=unk;
+      if(sc.kind==="time"){ G.timeUnknown=unk; G.time=unk?"":input.value; }
       advanceScene();
     });
+  }
+
+  /* ── 정보 확인 (토정비결 레퍼런스 패턴 — 입력 실수 방지) ── */
+  function runConfirm(){
+    avatar.dataset.exp="neutral";
+    showDialog();
+    typeLine("여기, 네 정보 모아봤어. 정확한지 다시 봐 줘.",null);
+    panel.innerHTML=""; panel.style.display="block";
+    [["생년월일",G.birth||"—"],["태어난 시간",G.timeUnknown?"모름 (시주 미상)":(G.time||"—")],["호칭",G.name||"손님"]].forEach(function(r){
+      var d=document.createElement("div"); d.className="ctl";
+      d.innerHTML="<span class='name'>"+r[0]+"</span><b style='margin-left:auto'>"+esc(r[1])+"</b>";
+      panel.appendChild(d);
+    });
+    var y=document.createElement("button"); y.className="cta"; y.id="confirmYes"; y.textContent="맞아, 이대로 봐줘";
+    y.addEventListener("click",function(){ pulse(); advanceScene(); });
+    panel.appendChild(y);
+    var n=document.createElement("button"); n.className="cta"; n.id="confirmRedo"; n.textContent="다시 적을래";
+    n.style.cssText="background:none;border:1.5px solid var(--glass-brd);color:var(--ink);margin-top:8px";
+    n.addEventListener("click",function(){ pulse(); go("in_birth"); });
+    panel.appendChild(n);
   }
 
   /* ── 만세력 연출 (時日月年 배열 · 年부터 우→좌 플립 · 오행 색상원 + 십신) ── */
@@ -590,6 +669,7 @@
     document.body.dataset.scene=sc.id;
     if(sc.type==="say") runSay(sc);
     else if(sc.type==="input") runInput(sc);
+    else if(sc.type==="confirm") runConfirm();
     else if(sc.type==="choice") runChoice(sc);
     else if(sc.type==="palja") runPalja();
     else if(sc.type==="result") runResult();
@@ -664,8 +744,17 @@
   $("modalClose").addEventListener("click",function(){ $("modal").classList.remove("show"); });
   $("modal").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("show"); });
 
+  $("btnTheme").addEventListener("click",function(){
+    SET.theme = SET.theme==="glass" ? "hanji" : "glass";
+    applySet();
+    toast(SET.theme==="hanji" ? "한지·수묵 韓紙" : "클로신 글래스");
+  });
+  $("coverOpen").addEventListener("click",function(){
+    pulse(); $("coverWrap").classList.add("hide"); go(0);
+  });
+
   applySet();
-  go(0);
+  if(FAST){ $("coverWrap").classList.add("hide"); go(0); }
 })();
 </script>
 </body>
