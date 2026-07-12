@@ -71,6 +71,17 @@ body[data-tone="red"] #bg {
   color: var(--el); background: color-mix(in srgb, var(--el) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--el) 34%, transparent); }
 .gl small { display: block; font-family: inherit; font-size: 9px; font-weight: 600; opacity: 0.8; font-family: 'Pretendard', sans-serif; }
+.gl[role="button"] { cursor: pointer; transition: transform 120ms var(--ease), box-shadow 120ms var(--ease); }
+.gl[role="button"]:hover, .gl[role="button"]:focus-visible { transform: translateY(-1px); box-shadow: 0 0 0 2px color-mix(in srgb, var(--el) 55%, transparent) inset; outline: none; }
+.gl[role="button"]:active { transform: scale(0.97); }
+#dict { max-height: 82vh; overflow-y: auto; }
+.d-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.d-head b { font-size: 15px; }
+.d-row { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: start; padding: 5px 0; border-top: 1px solid var(--glass-brd); font-size: 13px; }
+.d-row:first-of-type { border-top: 0; }
+.d-k { color: var(--sub); font-weight: 700; font-size: 11px; padding-top: 2px; }
+.d-v { line-height: 1.5; }
+.d-v .mini { font-size: 11px; margin: 1px 2px 1px 0; }
 .jjg { font-size: 9px; color: var(--sub); margin-top: 3px; }
 .mini { display: inline-block; font-size: 9px; color: var(--sub); border: 1px solid var(--glass-brd);
   border-radius: 5px; padding: 0 4px; margin: 1px; }

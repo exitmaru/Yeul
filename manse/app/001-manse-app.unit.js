@@ -3,6 +3,10 @@
 
 import { STEMS, BRANCHES, ELEMENTS } from '../js/knowledge/001-ganji.knowledge.js';
 import { buildSaju, runSelfTest } from '../js/core/002-saju-engine.core.js';
+import { SIPSIN_KEYWORDS } from '../js/knowledge/006-sipsin-keywords.knowledge.js';
+import { CHEONGAN_ARCHETYPE } from '../js/knowledge/011-cheongan-archetype.knowledge.js';
+import { JIJI_ARCHETYPE, JIJI_ROLE } from '../js/knowledge/012-jiji-archetype.knowledge.js';
+import { UNSEONG_MEANING } from '../js/knowledge/013-unseong-meaning.knowledge.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -26,20 +30,23 @@ function setTone(tone) {
   $('#btnTone').textContent = tone === 'mono' ? '톤: 무채' : '톤: 레드';
 }
 
-function gl(idx, isStem) {
+function gl(idx, isStem, pos) {
   const g = isStem ? STEMS[idx] : BRANCHES[idx];
-  return `<span class="gl" style="--el:${elVar[g.el]}">${g.han}<small>${g.kor}·${g.el}</small></span>`;
+  return `<span class="gl" role="button" tabindex="0" data-pos="${pos}" data-t="${isStem ? 'stem' : 'branch'}" style="--el:${elVar[g.el]}">${g.han}<small>${g.kor}·${g.el}</small></span>`;
 }
+
+let last = null; // 최근 계산 결과(사전 카드가 참조)
 
 function render() {
   const r = buildSaju(birth, OPTS);
+  last = r;
   $('#whoLine').textContent = `${birth.y}.${birth.mo}.${birth.d} ${String(birth.h).padStart(2, '0')}:${String(birth.mi).padStart(2, '0')} ${birth.sex === 1 ? '남' : '여'} · 서울`;
 
   $('#pillars').innerHTML = ['시주', '일주', '월주', '년주'].map((k) => {
     const p = r.pillars[k];
     return `<div class="pcell">
       <div class="lab">${k}</div><div class="ss">${p.stemSipsin}</div>
-      ${gl(p.stem, true)}${gl(p.branch, false)}
+      ${gl(p.stem, true, k)}${gl(p.branch, false, k)}
       <div class="ss">${p.branchSipsin}</div>
       <div class="jjg">${p.jijanggan.map((j) => j.stem).join('·')}</div>
       <div><span class="mini">${p.unseong}</span><span class="mini">${p.sinsal}</span></div>
@@ -107,6 +114,46 @@ function sheet(open) {
   $('#scrim').classList.toggle('on', open);
 }
 
+// ── 글자 사전 카드: 원국 글자 탭 → 물상·키워드·운성·십신·신살 (지식모듈 소비) ──
+const tagRow = (label, arr) => arr && arr.length
+  ? `<div class="d-row"><span class="d-k">${label}</span><span class="d-v">${arr.map((t) => `<span class="mini">${t}</span>`).join('')}</span></div>` : '';
+
+function openDict(pos, t) {
+  if (!last) return;
+  const p = last.pillars[pos];
+  const isStem = t === 'stem';
+  const g = isStem ? STEMS[p.stem] : BRANCHES[p.branch];
+  const sipsin = isStem ? p.stemSipsin : p.branchSipsin;
+  const kw = SIPSIN_KEYWORDS[sipsin];
+  let body = `
+    <div class="d-head">
+      <span class="gl" style="--el:${elVar[g.el]};font-size:44px;margin:0">${g.han}<small>${g.kor}·${g.el}${g.yang ? '·양' : '·음'}</small></span>
+      <div><b>${pos} ${isStem ? '천간' : '지지'}</b><div class="hint">${sipsin === '일간(我)' ? '일간(나 자신)' : sipsin}</div></div>
+    </div>`;
+  if (isStem) {
+    const a = CHEONGAN_ARCHETYPE[g.han];
+    body += (a ? `<div class="d-row"><span class="d-k">물상</span><span class="d-v">${a.물상}</span></div>${tagRow('키워드', a.키워드)}${tagRow('주의', a.주의)}` : '');
+  } else {
+    const a = JIJI_ARCHETYPE[g.han];
+    const role = a && JIJI_ROLE[a.자리];
+    body += (a ? `<div class="d-row"><span class="d-k">물상</span><span class="d-v">${a.물상}</span></div>
+      <div class="d-row"><span class="d-k">자리</span><span class="d-v">${a.자리} · ${role ? role.gloss : ''}</span></div>
+      <div class="d-row"><span class="d-k">계절/월</span><span class="d-v">${a.계절} · ${a.월}월</span></div>
+      ${tagRow('키워드', a.키워드)}` : '');
+    body += `<div class="d-row"><span class="d-k">지장간</span><span class="d-v">${p.jijanggan.map((j) => j.stem).join(' · ')}</span></div>`;
+    const um = UNSEONG_MEANING[p.unseong];
+    body += `<div class="d-row"><span class="d-k">십이운성</span><span class="d-v"><b>${p.unseong}</b>${um ? ` <span class="hint">${um.phase}</span>` : ''}</span></div>`;
+    if (um) body += tagRow('운성 의미', um.키워드);
+    body += `<div class="d-row"><span class="d-k">신살</span><span class="d-v">${p.sinsal}</span></div>`;
+  }
+  if (kw) body += `${tagRow('십신 관계', kw.관계)}${tagRow('미약 경향', kw.미약)}${tagRow('과다 경향', kw.과다)}`;
+  body += `<p class="statline sub" style="margin-top:10px">※ 물상·키워드·운성 의미는 공개 통설을 재정리한 <b>참고용</b> — 맥락·강약 무시한 단정은 금물.</p>`;
+  $('#dictBody').innerHTML = body;
+  $('#dict').classList.add('open');
+  $('#scrim').classList.add('on');
+}
+function closeDict() { $('#dict').classList.remove('open'); $('#scrim').classList.remove('on'); }
+
 export function mount() {
   // 배경 셰이더 마운트(실패해도 CSS 폴백 유지)
   try {
@@ -120,7 +167,18 @@ export function mount() {
   }
   $('#btnApply').addEventListener('click', () => { render(); sheet(false); goTab('wonguk'); });
   $('#btnSheet').addEventListener('click', () => sheet(true));
-  $('#scrim').addEventListener('click', () => sheet(false));
+  $('#scrim').addEventListener('click', () => { sheet(false); closeDict(); });
+
+  // 글자 탭 → 사전 카드 (이벤트 위임 — 원국은 매 렌더 재생성)
+  $('#pillars').addEventListener('click', (e) => {
+    const el = e.target.closest('.gl'); if (!el) return;
+    openDict(el.dataset.pos, el.dataset.t);
+  });
+  $('#pillars').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest('.gl'); if (!el) return;
+    e.preventDefault(); openDict(el.dataset.pos, el.dataset.t);
+  });
   $('#btnTone').addEventListener('click', () => setTone(document.body.dataset.tone === 'mono' ? 'red' : 'mono'));
   $$('.tab').forEach((b) => b.addEventListener('click', () => goTab(b.dataset.go)));
 
