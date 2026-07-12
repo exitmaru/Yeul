@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유튜브 자막 추출 — 결과 보고 (260712)</title>
+<style>
+  :root{--bg:#0f1220;--card:#181c2e;--ink:#e8e9f3;--sub:#a7abc4;--line:#2a2f47;
+        --brand:#302cff;--ok:#2ece8b;--bad:#ff5d6c;--warn:#ffcf5d;--maxw:1080px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+       line-height:1.65;padding:20px}
+  .wrap{max-width:var(--maxw);margin:0 auto}
+  h1{font-size:1.5rem;margin:.2em 0 .1em}
+  h2{font-size:1.15rem;margin:1.6em 0 .5em;border-left:4px solid var(--brand);padding-left:.5em}
+  .eyebrow{color:var(--brand);font-weight:700;letter-spacing:.04em;font-size:.8rem;text-transform:uppercase}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:14px 0}
+  .sub{color:var(--sub)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .stat b{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums}
+  .stat span{color:var(--sub);font-size:.82rem}
+  .pill{display:inline-block;padding:.15em .6em;border-radius:999px;font-size:.78rem;font-weight:700}
+  .p-bad{background:rgba(255,93,108,.15);color:var(--bad)}
+  .p-ok{background:rgba(46,206,139,.15);color:var(--ok)}
+  .p-warn{background:rgba(255,207,93,.16);color:var(--warn)}
+  code,kbd{background:#0b0e1a;border:1px solid var(--line);border-radius:6px;padding:.1em .45em;
+           font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88em}
+  pre{background:#0b0e1a;border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto}
+  ol{padding-left:1.2em} ol li{margin:.5em 0}
+  table{border-collapse:collapse;width:100%;font-size:.86rem}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;white-space:nowrap}
+  th{background:#12162a;position:sticky;top:0}
+  .beforeafter{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:640px){.beforeafter{grid-template-columns:1fr}}
+  a{color:#8ea2ff}
+</style></head>
+<body><div class="wrap">
+  <div class="eyebrow">EXIT : MARU · 결과 보고</div>
+  <h1>유튜브 자막(글자) 추출 — 도구 제작 완료 <span class="pill p-warn">추출은 내 PC에서</span></h1>
+  <p class="sub">260712 · 보내준 유튜브 주소 <b>321개(+재생목록 4개)</b> · 요청: “글자 다 추출해서 영상별로 저장 + 워드 파일”</p>
+
+  <div class="grid">
+    <div class="stat"><b>321</b><span>고유 영상 (중복 제거 전 600+줄)</span></div>
+    <div class="stat"><b>4</b><span>재생목록 (자동 펼침)</span></div>
+    <div class="stat"><b>0</b><span>이 서버에서 추출 가능 <span class="pill p-bad">IP 차단</span></span></div>
+    <div class="stat"><b>1</b><span>실행 스크립트 (검증 완료)</span></div>
+  </div>
+
+  <h2>핵심: 왜 여기서 자막이 안 뽑혔나</h2>
+  <div class="card">
+    <p>결론부터 — <b>이 클라우드 서버 IP가 유튜브에 봇으로 찍혀 차단</b>됐어. 코드 문제가 아니라 네트워크(주소) 차단이야.</p>
+    <ul>
+      <li><code>youtube-transcript-api</code> → <span class="pill p-bad">RequestBlocked</span> (IP 차단 명시)</li>
+      <li><code>yt-dlp</code> → <span class="pill p-bad">“Sign in to confirm you're not a bot”</span></li>
+      <li>watch 페이지 직접 요청 → <b>302 리다이렉트 → <code>google.com/sorry</code></b> (구글의 “비정상 트래픽” 차단 페이지). 이게 결정적 증거.</li>
+    </ul>
+    <p class="sub">데이터센터(클라우드) IP는 유튜브가 자동요청을 막지만, <b>집·회사 일반 인터넷에서는 대부분 정상</b> 동작해.</p>
+  </div>
+
+  <h2>그래서 만든 것: 내 PC에서 한 번에 돌아가는 도구</h2>
+  <div class="card">
+    <p>레포에 저장함 → <code>tools/youtube_transcripts/</code></p>
+    <div class="tblwrap"><table>
+      <tr><th>파일</th><th>역할</th></tr>
+      <tr><td><code>extract.py</code></td><td>주소 읽기 → 영상별 자막 추출 → txt 저장 → 워드 1개 생성 (실패영상도 안전 처리)</td></tr>
+      <tr><td><code>youtube_urls.txt</code></td><td>네가 보낸 321영상+4재생목록 (중복 제거 완료) — 그대로 쓰면 됨</td></tr>
+      <tr><td><code>requirements.txt</code></td><td>필요한 부품 3개 목록</td></tr>
+      <tr><td><code>README.md</code></td><td>따라 하기 설명서 (처음이어도 되게 한 단계씩)</td></tr>
+    </table></div>
+    <p><b>검증 완료(오프라인):</b> 입력 파싱(321개 정확) · 워드 생성(유효한 .docx) · 영상별 txt · 실패영상 표기 · 요약 CSV — <span class="pill p-ok">전 과정 정상</span>. 네트워크 자막요청만 이 서버에서 막힘.</p>
+  </div>
+
+  <h2>내 PC에서 실행하는 법 (3줄)</h2>
+  <div class="card">
+    <ol>
+      <li><code>tools/youtube_transcripts</code> 폴더로 이동</li>
+      <li><pre>pip install -r requirements.txt</pre></li>
+      <li><pre>python extract.py</pre></li>
+    </ol>
+    <p>끝나면 <code>output/유튜브_자막_모음.docx</code>(전부 묶은 워드) + <code>output/텍스트/0001_….txt</code>(영상별) + <code>output/결과요약.csv</code>가 생겨. 자세한 건 README.md.</p>
+  </div>
+
+  <h2>전 · 후 · 리스크 · 장단점</h2>
+  <div class="beforeafter">
+    <div class="card"><b>전(Before)</b><p class="sub">주소 600+줄이 뒤섞여 있고(중복 다수), 자막 텍스트는 하나도 없음.</p></div>
+    <div class="card"><b>후(After)</b><p class="sub">321개로 정리 + 재현 가능한 추출 도구. 내 PC에서 실행하면 영상별 txt + 워드 완성.</p></div>
+  </div>
+  <div class="card">
+    <b>리스크 / 한계</b>
+    <ul class="sub">
+      <li>자막이 <b>꺼진 영상</b>은 어디서 돌려도 못 가져옴 → CSV에 ‘실패’로 표기하고 계속 진행.</li>
+      <li>한꺼번에 많이 요청하면 일반 IP도 일시 차단될 수 있어 → 영상 사이 1초 쉼(조절 가능).</li>
+      <li>자동생성 자막은 오탈자·띄어쓰기 오류가 있을 수 있음(유튜브 원본 한계).</li>
+    </ul>
+    <b>대안</b>
+    <p class="sub">내 PC가 어려우면, 브라우저 쿠키를 내보내 클라우드에서 우회 실행하는 방법도 있음(민감정보라 번거로움). 필요하면 안내할게.</p>
+  </div>
+
+  <p class="sub" style="margin-top:24px">생성: 260712 · EXIT:MARU 자동 작업 보고</p>
+</div></body></html>
