@@ -36,6 +36,17 @@ function gl(idx, isStem, pos) {
 }
 
 let last = null; // 최근 계산 결과(사전 카드가 참조)
+let figNotes = null; // FigJam 해석 노트(본인 정리) — mount에서 로드
+
+// 십신/글자에 맞는 해석 노트 추리기(참고용)
+function notesFor(sipsin, han, kor) {
+  if (!figNotes) return [];
+  const pool = [...(figNotes.십신 || []), ...(figNotes.격국패턴 || []), ...(figNotes.천간론 || []), ...(figNotes.지지론 || [])];
+  const keys = [sipsin, han, kor].filter(Boolean);
+  const hit = pool.filter((it) => keys.some((k) => it.note.includes(k)));
+  const uniq = [...new Map(hit.map((it) => [it.note, it])).values()];
+  return uniq.slice(0, 5);
+}
 
 function render() {
   const r = buildSaju(birth, OPTS);
@@ -147,7 +158,14 @@ function openDict(pos, t) {
     body += `<div class="d-row"><span class="d-k">신살</span><span class="d-v">${p.sinsal}</span></div>`;
   }
   if (kw) body += `${tagRow('십신 관계', kw.관계)}${tagRow('미약 경향', kw.미약)}${tagRow('과다 경향', kw.과다)}`;
-  body += `<p class="statline sub" style="margin-top:10px">※ 물상·키워드·운성 의미는 공개 통설을 재정리한 <b>참고용</b> — 맥락·강약 무시한 단정은 금물.</p>`;
+
+  // FigJam 해석 노트(본인 정리) — 매칭되는 것만
+  const notes = notesFor(sipsin, g.han, g.kor);
+  if (notes.length) {
+    body += `<h3 style="margin:14px 0 6px;font-size:12px;color:var(--sub)">해석 노트 <span class="hint">· 본인 정리</span></h3>` +
+      notes.map((n) => `<div class="d-note">${n.note}${n.source ? `<span class="d-src">출처 ${n.source}</span>` : ''}</div>`).join('');
+  }
+  body += `<p class="statline sub" style="margin-top:10px">※ 물상·키워드·운성 의미는 공개 통설, 해석 노트는 본인 정리 — 전부 <b>참고용</b>. 맥락·강약 무시한 단정은 금물.</p>`;
   $('#dictBody').innerHTML = body;
   $('#dict').classList.add('open');
   $('#scrim').classList.add('on');
@@ -159,6 +177,10 @@ export function mount() {
   try {
     if (window.PaperBG) bgCtl = window.PaperBG.mount($('#bg'), { ...SHADER_BASE, ...TONES.mono });
   } catch (e) { console.warn('shader fallback:', e); }
+
+  // FigJam 해석 노트 로드(실패해도 앱은 동작)
+  fetch('../db/figjam_notes.json').then((r) => r.ok ? r.json() : null)
+    .then((j) => { figNotes = j && j.data; }).catch(() => {});
 
   // 입력 바인딩
   for (const [k, sel] of Object.entries({ y: '#in-y', mo: '#in-mo', d: '#in-d', h: '#in-h', mi: '#in-mi', sex: '#in-sex' })) {

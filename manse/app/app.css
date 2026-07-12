@@ -82,6 +82,9 @@ body[data-tone="red"] #bg {
 .d-k { color: var(--sub); font-weight: 700; font-size: 11px; padding-top: 2px; }
 .d-v { line-height: 1.5; }
 .d-v .mini { font-size: 11px; margin: 1px 2px 1px 0; }
+.d-note { font-size: 12.5px; line-height: 1.55; padding: 8px 10px; margin: 6px 0; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-brd); }
+.d-src { display: block; margin-top: 4px; font-size: 10px; color: var(--sub); }
 .jjg { font-size: 9px; color: var(--sub); margin-top: 3px; }
 .mini { display: inline-block; font-size: 9px; color: var(--sub); border: 1px solid var(--glass-brd);
   border-radius: 5px; padding: 0 4px; margin: 1px; }
