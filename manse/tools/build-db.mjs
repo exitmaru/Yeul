@@ -10,6 +10,9 @@ import { sipsinOf, YUKCHIN, TEN_GODS } from '../js/knowledge/003-sipsin.knowledg
 import { unseongOf, sinsalOf, gongmangOf, UNSEONG_STAGES, SINSAL_ORDER }
   from '../js/knowledge/004-unseong-sinsal.knowledge.js';
 import { STRENGTH_WEIGHTS, STRENGTH_THRESHOLDS } from '../js/knowledge/005-strength-yongsin.knowledge.js';
+import { branchRelations, HAP_STRENGTH } from '../js/knowledge/008-hapchung.knowledge.js';
+import { GUNGWI, GUNG_PAIR } from '../js/knowledge/007-gungwi.knowledge.js';
+import { PATTERNS } from '../js/knowledge/009-pattern.knowledge.js';
 import { jieTime, JIE } from '../js/core/001-calendar.core.js';
 
 const OUT = new URL('../db/', import.meta.url);
@@ -107,6 +110,20 @@ files['jieqi_1900_2050.json'] = {
   data: jieqi,
 };
 
+// 11) 지지 관계 매트릭스 12×12 (합충형파해원진) — FigJam 접목분
+files['hapchung.json'] = {
+  meta: meta('지지 관계', '삼합·방합·육합·충·형·파·해·원진 전조합. FigJam 강도서열 계승'),
+  strength: HAP_STRENGTH,
+  matrix: BRANCHES.map((_, a) => BRANCHES.map((_, b) => (a === b ? [] : branchRelations(a, b).map((r) => r.type + (r.el ? `(${r.el})` : ''))))),
+};
+
+// 12) 궁위론 + 십신 조합 패턴 (구조/트리거만)
+files['gungwi.json'] = { meta: meta('궁위론', '근묘화실·궁성 구조 라벨(FigJam 계승)'), palaces: GUNGWI, pairs: GUNG_PAIR };
+files['patterns.json'] = {
+  meta: meta('십신 패턴', '트리거 조건은 함수라 직렬화 불가 → key/gloss만. 판정은 009 모듈 detectPatterns 사용'),
+  data: PATTERNS.map((p) => ({ key: p.key, gloss: p.gloss })),
+};
+
 // ── 검증(앵커) 후 기록 ──
 const assert = (name, cond) => { if (!cond) throw new Error(`DB 검증 실패: ${name}`); console.log(`ok  ${name}`); };
 assert('60갑자 0=甲子', files['ganji60.json'].data[0].han === '甲子');
@@ -117,6 +134,11 @@ assert('신살 [자][유]=년살', files['sinsal.json'].matrix[0][9] === '년살
 assert('절기 행수 151×12', jieqi.length === 151 * 12);
 const ip2000 = jieqi.find((r) => r.y === 2000 && r.name === '입춘');
 assert('입춘2000 = 2월 3~5일', /^2000-02-0[345]/.test(ip2000.utc));
+assert('지지관계 子(0)午(6)=충', files['hapchung.json'].matrix[0][6].includes('충'));
+assert('지지관계 寅(2)午(6)=반합(화)', files['hapchung.json'].matrix[2][6].some((s) => s.startsWith('반합') && s.includes('화')));
+const oo = branchRelations(6, 6).map((r) => r.type);
+assert('午午=자형만(삼합 아님)', oo.includes('자형') && !oo.some((t) => t.includes('삼합') || t.includes('반합')));
+assert('지지관계 子(0)丑(1)=육합(토)', files['hapchung.json'].matrix[0][1].includes('육합(토)'));
 
 await mkdir(OUT, { recursive: true });
 let total = 0;

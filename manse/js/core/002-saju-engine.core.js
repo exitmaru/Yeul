@@ -8,6 +8,8 @@ import { sipsinOf } from '../knowledge/003-sipsin.knowledge.js';
 import { unseongOf, sinsalOf, gongmangOf } from '../knowledge/004-unseong-sinsal.knowledge.js';
 import { STRENGTH_WEIGHTS, STRENGTH_THRESHOLDS, isHelper, eokbuHint, johuHint, gyeokgukOf }
   from '../knowledge/005-strength-yongsin.knowledge.js';
+import { pillarBranchRelations } from '../knowledge/008-hapchung.knowledge.js';
+import { detectPatterns, isGanyeojidong } from '../knowledge/009-pattern.knowledge.js';
 import { jdn, dayGanjiIdx, monthContext, trueSolarMinutes, jieTime, JIE } from './001-calendar.core.js';
 
 const stemIdxOfHan = (han) => STEMS.findIndex((s) => s.han === han);
@@ -119,7 +121,17 @@ export function buildSaju(input, opts) {
   const tDay = ganjiOf(dayGanjiIdx(jdn(t.getFullYear(), t.getMonth() + 1, t.getDate())));
   const today = { year: tYear, month: tMonth, day: tDay };
 
-  return { input, opts, ts, pillars: per, dayIdx, gongmang, counts, score, strength, yongsin, daeun, daeunSu: su, forward, seun, today, solar };
+  // 지지 관계(원국 4지지) + 십신 패턴 — FigJam 접목분
+  const relations = pillarBranchRelations(['시주', '일주', '월주', '년주'].map((k) => pillars[k].branch));
+  const sipsinCounts = {};
+  for (const k of Object.keys(per)) {
+    if (k !== '일주') sipsinCounts[per[k].stemSipsin] = (sipsinCounts[per[k].stemSipsin] || 0) + 1;
+    sipsinCounts[per[k].branchSipsin] = (sipsinCounts[per[k].branchSipsin] || 0) + 1;
+  }
+  const patterns = detectPatterns(sipsinCounts, { strength });
+  if (isGanyeojidong(STEMS[dayStem].el, STEMS[stemIdxOfHan(per.일주.branchMain)].el)) patterns.push({ key: '간여지동', gloss: '일간=일지 오행: 강한 자기중심' });
+
+  return { input, opts, ts, pillars: per, dayIdx, gongmang, counts, score, strength, yongsin, daeun, daeunSu: su, forward, seun, today, solar, relations, sipsinCounts, patterns };
 }
 
 function findIdx60(stem, branch) { for (let i = 0; i < 60; i++) if (i % 10 === stem && i % 12 === branch) return i; return 0; }
@@ -143,5 +155,8 @@ export function runSelfTest() {
   const s = buildSaju({ y: 1990, mo: 5, d: 15, h: 12, mi: 30, sex: 1 }, { trueSolar: false, eot: false, apply1954: true, lon: 126.98, jasiMode: '야자시', daeunRound: '반올림', sinsalBase: '년지', daeunCount: 8, seunCount: 12 });
   eq('1990-05-15 년주=庚午', STEMS[s.pillars.년주.stem].han + BRANCHES[s.pillars.년주.branch].han, '庚午');
   eq('1990-05-15 월주=辛巳', STEMS[s.pillars.월주.stem].han + BRANCHES[s.pillars.월주.branch].han, '辛巳');
+  // FigJam 접목: 지지관계·패턴 배선 확인
+  eq('지지관계 배열 존재', Array.isArray(s.relations), 'true');
+  eq('십신카운트 합=7(일간 제외 8자)', Object.values(s.sipsinCounts).reduce((a, b) => a + b, 0), '7');
   return T;
 }

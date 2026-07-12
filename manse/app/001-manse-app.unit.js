@@ -47,10 +47,14 @@ function render() {
   }).join('');
 
   const corr = Math.round(r.ts.corrMin);
+  const relChips = r.relations.flatMap((x) => x.rel.map((rr) =>
+    `<span class="chip">${BRANCHES[x.a].han}${BRANCHES[x.b].han} <b>${rr.type}${rr.el ? '·' + rr.el : ''}</b></span>`));
+  const patChips = r.patterns.map((p) => `<span class="chip acc" title="${p.gloss}">${p.key}</span>`);
   $('#meta').innerHTML = [
     `<span class="chip">보정 <b>${corr >= 0 ? '+' : ''}${corr}분</b></span>`,
     `<span class="chip">공망 <b>${r.gongmang.map((i) => BRANCHES[i].han).join('·')}</b></span>`,
     `<span class="chip acc">${r.yongsin.gyeokguk}</span>`,
+    ...relChips, ...patChips,
   ].join('');
 
   const maxN = Math.max(...ELEMENTS.map((e) => r.counts[e]), 1);

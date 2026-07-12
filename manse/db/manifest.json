@@ -61,6 +61,21 @@
    "file": "jieqi_1900_2050.json",
    "bytes": 153819,
    "name": "절기(12節) 시각"
+  },
+  {
+   "file": "hapchung.json",
+   "bytes": 3151,
+   "name": "지지 관계"
+  },
+  {
+   "file": "gungwi.json",
+   "bytes": 847,
+   "name": "궁위론"
+  },
+  {
+   "file": "patterns.json",
+   "bytes": 666,
+   "name": "십신 패턴"
   }
  ]
 }
