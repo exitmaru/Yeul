@@ -76,6 +76,11 @@
    "file": "patterns.json",
    "bytes": 666,
    "name": "십신 패턴"
+  },
+  {
+   "file": "cheongan_archetype.json",
+   "bytes": 1860,
+   "name": "천간 아키타입"
   }
  ]
 }

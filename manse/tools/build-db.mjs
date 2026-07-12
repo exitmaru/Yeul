@@ -13,6 +13,7 @@ import { STRENGTH_WEIGHTS, STRENGTH_THRESHOLDS } from '../js/knowledge/005-stren
 import { branchRelations, HAP_STRENGTH } from '../js/knowledge/008-hapchung.knowledge.js';
 import { GUNGWI, GUNG_PAIR } from '../js/knowledge/007-gungwi.knowledge.js';
 import { PATTERNS } from '../js/knowledge/009-pattern.knowledge.js';
+import { CHEONGAN_ARCHETYPE, TOPIC_ROADMAP } from '../js/knowledge/011-cheongan-archetype.knowledge.js';
 import { jieTime, JIE } from '../js/core/001-calendar.core.js';
 
 const OUT = new URL('../db/', import.meta.url);
@@ -124,6 +125,12 @@ files['patterns.json'] = {
   data: PATTERNS.map((p) => ({ key: p.key, gloss: p.gloss })),
 };
 
+// 13) 천간 아키타입(통설 키워드) + 주제 로드맵
+files['cheongan_archetype.json'] = {
+  meta: meta('천간 아키타입', '통설 물상·성정 키워드(공개 사실 재정리). 유료 게시판 본문 미인용'),
+  data: CHEONGAN_ARCHETYPE, roadmap: TOPIC_ROADMAP,
+};
+
 // ── 검증(앵커) 후 기록 ──
 const assert = (name, cond) => { if (!cond) throw new Error(`DB 검증 실패: ${name}`); console.log(`ok  ${name}`); };
 assert('60갑자 0=甲子', files['ganji60.json'].data[0].han === '甲子');
@@ -138,6 +145,8 @@ assert('지지관계 子(0)午(6)=충', files['hapchung.json'].matrix[0][6].incl
 assert('지지관계 寅(2)午(6)=반합(화)', files['hapchung.json'].matrix[2][6].some((s) => s.startsWith('반합') && s.includes('화')));
 const oo = branchRelations(6, 6).map((r) => r.type);
 assert('午午=자형만(삼합 아님)', oo.includes('자형') && !oo.some((t) => t.includes('삼합') || t.includes('반합')));
+assert('천간 아키타입 10천간', Object.keys(files['cheongan_archetype.json'].data).length === 10);
+assert('甲=목·큰 나무', files['cheongan_archetype.json'].data.甲.el === '목');
 assert('지지관계 子(0)丑(1)=육합(토)', files['hapchung.json'].matrix[0][1].includes('육합(토)'));
 
 await mkdir(OUT, { recursive: true });
