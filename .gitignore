@@ -22,3 +22,10 @@ _scratch/
 Thumbs.db
 *.swp
 *~
+
+# --- OAuth 계정 승격 신호 파일(런타임 폴오버가 남기는 임시물 · 커밋 금지) ---
+.nomute_active_quota
+
+# --- Python 캐시(py_compile 등) ---
+__pycache__/
+*.pyc
