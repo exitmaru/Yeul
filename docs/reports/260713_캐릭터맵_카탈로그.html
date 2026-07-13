@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>캐릭터 맵 카탈로그 — 사주 캐릭터 리졸버</title>
+<style>
+  :root{ --ink:#3a3128; --sub:rgba(58,49,40,.62); --accent:#b0402b; --line:rgba(90,70,40,.2);
+    --el-mok:#6fc46f; --el-hwa:#ef6a5e; --el-to:#d4a437; --el-geum:#a7b2bf; --el-su:#7f96c9;
+    --pt1:#f5efe0; --pt2:#efe6d3; }
+  @media (prefers-color-scheme:dark){ :root{ --ink:#f2f0ec; --sub:rgba(242,240,236,.6); --line:rgba(255,255,255,.12); --pt1:#141416; --pt2:#0f0f11; } }
+  *{box-sizing:border-box}
+  body{ margin:0; font-family:"Pretendard",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; letter-spacing:-.01em;
+    color:var(--ink); background:linear-gradient(180deg,var(--pt1),var(--pt2)); padding:20px 14px 70px; min-height:100vh; }
+  .wrap{ max-width:1080px; margin:0 auto; }
+  h1{ font-size:clamp(20px,3.4vw,27px); margin:.1em 0 .1em; }
+  .lede{ color:var(--sub); font-size:13.5px; line-height:1.65; max-width:820px; margin:0 0 6px; }
+  .lede b{ color:var(--accent); }
+  code{ font-family:ui-monospace,Menlo,monospace; background:rgba(128,100,60,.12); padding:1px 5px; border-radius:5px; font-size:.92em; }
+  h2{ font-size:15px; margin:26px 0 4px; }
+  h2 small{ color:var(--sub); font-weight:400; font-size:12px; margin-left:6px; }
+  .card{ border:1px solid var(--line); border-radius:16px; padding:16px; background:rgba(128,100,60,.05); margin-top:10px; }
+  .recipes{ display:grid; gap:12px; grid-template-columns:1fr; }
+  @media(min-width:720px){ .recipes{ grid-template-columns:1fr 1fr; } }
+  .rc{ border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:rgba(255,255,255,.03); }
+  .rc h3{ margin:0 0 8px; font-size:12.5px; color:var(--accent); }
+  .rc .demo{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; min-height:40px; }
+  .rc pre{ margin:8px 0 0; font-size:10.5px; color:var(--sub); white-space:pre-wrap; line-height:1.5; }
+  .yr{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .yr input{ width:110px; padding:8px 10px; border-radius:9px; border:1px solid var(--line); background:transparent; color:inherit; font:inherit; font-variant-numeric:tabular-nums; }
+  .yr button{ padding:8px 14px; border-radius:9px; border:0; background:var(--accent); color:#fff9ef; font:inherit; font-weight:800; cursor:pointer; }
+  .grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-top:10px; }
+  @media(max-width:640px){ .grid{ grid-template-columns:repeat(4,1fr); } }
+  .cell{ text-align:center; border:1px solid var(--line); border-radius:12px; padding:8px 4px; background:rgba(255,255,255,.03); }
+  .cell .nm{ font-size:11px; font-weight:800; margin-top:2px; }
+  .cell .sub{ font-size:9.5px; color:var(--sub); }
+  .gapja{ display:grid; grid-template-columns:repeat(12,1fr); gap:6px; margin-top:8px; }
+  .gapja .g{ text-align:center; }
+  .gapja .g .lab{ font-size:8px; color:var(--sub); margin-top:1px; font-family:serif; }
+  .rowlab{ font-size:11px; font-weight:800; color:var(--accent); margin:12px 0 2px; }
+  .foot{ margin-top:22px; font-size:11px; color:var(--sub); line-height:1.7; border-top:1px solid var(--line); padding-top:12px; }
+  .warn{ color:#c77700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>캐릭터 맵 카탈로그 🐭🐯🐲</h1>
+  <p class="lede">정본 = <code>assets/images/characters/character-map.js</code> — <b>UI 무관 리졸버</b>. 이 페이지는 그 모듈이
+  실제로 뱉는 걸 <b>전부 눈으로</b> 보여줘. 대화형이든 카드든, 여기서 자리·크기만 정하면 됨. API 문서 = <code>docs/캐릭터맵_API.md</code>.</p>
+
+  <h2>레시피 <small>· UI 패턴별 라이브 출력</small></h2>
+  <div class="recipes" id="recipes"></div>
+
+  <h2>12지 <small>· zodiac(branchIdx) — 계절 오방색 · 띠/지지 단독용</small></h2>
+  <div class="card"><div class="grid" id="zodiacGrid"></div></div>
+
+  <h2>60갑자 <small>· ganji(stemIdx, branchIdx) — 천간 오행색 · 기둥/간지용 (예 丙午=적마)</small></h2>
+  <div class="card" id="gapjaWrap"></div>
+
+  <p class="foot" id="foot">불러오는 중…</p>
+</div>
+
+<script type="module">
+import * as C from '/assets/images/characters/character-map.js';
+
+const el = (h) => { const t=document.createElement('template'); t.innerHTML=h.trim(); return t.content.firstChild; };
+
+// ── 레시피 (라이브) ──
+const recipes = document.getElementById('recipes');
+// ① 대화형 인라인
+{
+  const me = C.byYear(1990);
+  recipes.appendChild(el(`<div class="rc"><h3>① 대화형 말풍선 인라인</h3>
+    <div class="demo">${C.imgTag(me,{size:22})} <span>${me.animal}띠, 올해가 좀 재밌게 나오네.</span></div>
+    <pre>const me = byYear(1990);
+\`\${imgTag(me,{size:22})} \${me.animal}띠…\`</pre></div>`));
+}
+// ② 아바타(원형)
+{
+  const g = C.ganji(2,6);
+  recipes.appendChild(el(`<div class="rc"><h3>② 아바타 · 원형</h3>
+    <div class="demo">${C.imgTag(g,{size:64,round:true})}<span>${g.hanja} ${g.animal}</span></div>
+    <pre>imgTag(ganji(2,6), {size:64, round:true})</pre></div>`));
+}
+// ③ 색으로 테마
+{
+  const g = C.ganji(8,0);
+  recipes.appendChild(el(`<div class="rc"><h3>③ 캐릭터 색으로 테마 <small>(이미지 없이 .color만)</small></h3>
+    <div class="demo"><span style="border-left:4px solid ${g.color};padding-left:8px">${g.hanja} — <b style="color:${g.color}">${g.color}</b> 강조</span></div>
+    <pre>box.style.setProperty('--accent', ganji(8,0).color)</pre></div>`));
+}
+// ④ 생년 입력 → 띠
+{
+  const box = el(`<div class="rc"><h3>④ 생년 입력 → 띠 (byYear)</h3>
+    <div class="yr"><input id="yin" type="number" value="1993" min="1"><button id="ybtn">내 띠</button></div>
+    <div class="demo" id="yout"></div>
+    <pre>byYear(input.value) → {src, animal, …}</pre></div>`);
+  recipes.appendChild(box);
+  const draw = () => { const z=C.byYear(box.querySelector('#yin').value);
+    box.querySelector('#yout').innerHTML = z ? `${C.imgTag(z,{size:40})} <b>${z.animal}띠</b> · ${z.season} · ${z.el}` : '<span class="warn">연도 확인</span>'; };
+  box.querySelector('#ybtn').onclick = draw; box.querySelector('#yin').addEventListener('keydown',e=>{if(e.key==='Enter')draw();}); draw();
+}
+
+// ── 12지 그리드 ──
+const zg = document.getElementById('zodiacGrid');
+C.ALL_ZODIAC.forEach(z => zg.appendChild(el(
+  `<div class="cell" style="border-color:${z.color}55">${C.imgTag(z,{size:52})}
+   <div class="nm">${z.animal}<span class="sub"> ${z.hanja}</span></div>
+   <div class="sub">${z.season}·${z.el}</div></div>`)));
+
+// ── 60갑자 (천간 5오행 × 12지) ──
+const gw = document.getElementById('gapjaWrap');
+const STEM_LABEL = ['갑목','을목','병화','정화','무토','기토','경금','신금','임수','계수'];
+for (let s=0; s<10; s++){
+  gw.appendChild(el(`<div class="rowlab">${['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'][s]} ${STEM_LABEL[s]}</div>`));
+  const row = el(`<div class="gapja"></div>`);
+  for (let b=0; b<12; b++){
+    const g = C.ganji(s,b);
+    if (!g.valid){ row.appendChild(el(`<div class="g"></div>`)); continue; } // 음양 파리티 불일치 = 빈칸
+    row.appendChild(el(`<div class="g" title="${g.hanja} ${g.animal} · ${g.num}번">${C.imgTag(g,{size:36})}<div class="lab">${g.hanja}</div></div>`));
+  }
+  gw.appendChild(row);
+}
+
+document.getElementById('foot').innerHTML =
+  `✅ 리졸버 라이브 로드 — 12지 ${C.ALL_ZODIAC.length}종 · 60갑자 ${C.allGanji().length}종 렌더. ` +
+  `<span class="warn">개발 참고용</span>(모듈·이미지를 서버/배포본에서 불러옴 — file://·격리 렌더에선 이미지 안 보일 수 있음). ` +
+  `자리·크기·모션은 UI 소관, 이 페이지는 "무엇이 있는지"만.`;
+</script>
+</body>
+</html>
