@@ -238,10 +238,11 @@ function stepConsult(r, known, auto) {
 
   const renderConfirm = (ev) => {
     adv.hidden = true;
-    const row = push(`<p class="cq">${esc(ev.prompt)}</p><div class="saju-pick three" id="c-choices">
-      <button class="saju-btn ghost" data-c="맞아">맞아</button>
-      <button class="saju-btn ghost" data-c="글쎄">글쎄</button>
-      <button class="saju-btn ghost" data-c="아니야">아니야</button>
+    // 답변지(계산된 보기)면 보기+[그런 일 없었어], 아니면 기본 3버튼
+    const labels = ev.options ? [...ev.options, '그런 일 없었어'] : ['맞아', '글쎄', '아니야'];
+    const cols = ev.options ? '' : ' three';
+    const row = push(`<p class="cq">${esc(ev.prompt)}</p><div class="saju-pick${cols}" id="c-choices" style="${ev.options ? 'grid-template-columns:1fr' : ''}">
+      ${labels.map((l) => `<button class="saju-btn ghost" data-c="${esc(l)}">${esc(l)}</button>`).join('')}
     </div>`, 'ask');
     row.querySelectorAll('[data-c]').forEach((b) => b.addEventListener('click', () => {
       row.querySelector('#c-choices').remove();
@@ -259,7 +260,7 @@ function stepConsult(r, known, auto) {
     if (ev.kind === 'step') { push(`<span class="cstep">${esc(ev.title)}</span>`, 'step'); advance(); return; }
     if (ev.kind === 'sep') { advance(); return; }
     if (ev.kind === 'say') { push(`<p>${esc(ev.text)}</p>`, ev.big ? 'big' : ''); if (auto) advance(); return; }
-    if (ev.kind === 'confirm') { if (auto) { consult.answer('맞아'); advance(); } else renderConfirm(ev); return; }
+    if (ev.kind === 'confirm') { if (auto) { consult.answer(ev.options?.[0] ?? '맞아'); advance(); } else renderConfirm(ev); return; }
     if (ev.kind === 'end') { renderEnd(ev.ending); return; }
   };
 

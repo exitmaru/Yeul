@@ -6,6 +6,7 @@
 //       모든 문구는 v1 중립 슬롯 — 후속 페르소나 팩이 이 함수들만 갈아끼우면 된다(도킹면).
 
 import { STEMS } from '../../manse/js/knowledge/001-ganji.knowledge.js';
+import { CHEONGAN_ARCHETYPE } from '../../manse/js/knowledge/011-cheongan-archetype.knowledge.js';
 import { selectJeonggok } from './008-jeonggok.knowledge.js';
 
 const STEP_TITLES = Object.freeze({
@@ -72,6 +73,26 @@ function confirmPrompt(c) {
 
 const RECAL = `오케이, 그건 접을게 — 팔자에 있어도 겉으로 안 드러나는 자리가 있어. 억지로 맞다고 안 해.`;
 
+// 답변지(설계 §4): EVENT 정곡이 꽂힌 순간, 계산된 삶-장면 보기를 버튼으로.
+// 보기 근거 = 궁위론(007 GUNGWI domain)의 관장 영역 — 궁이 특정되면 그 궁의 장면을 앞세운다.
+const PALACE_OPTIONS = Object.freeze({
+  일주: ['관계·거처의 변화', '나 자신의 큰 결심'],
+  월주: ['일·직장의 변화', '가까운 사람(부모·형제) 일'],
+  년주: ['집안·환경의 변화', '기반이 흔들리는 일'],
+  시주: ['자식·아랫사람 일', '장기 계획의 변경'],
+});
+const GENERIC_OPTIONS = Object.freeze(['일·소속의 변화', '관계·거처의 변화', '마음의 방향 전환']);
+
+function answerSheetOf(c) {
+  if (c.key === 'gyoungi') return [...GENERIC_OPTIONS];
+  if (c.key.startsWith('daeun_') && c.facts.palace && PALACE_OPTIONS[c.facts.palace]) {
+    const primary = PALACE_OPTIONS[c.facts.palace];
+    const filler = GENERIC_OPTIONS.find((o) => !primary.includes(o));
+    return [...primary, filler].filter(Boolean).slice(0, 3);
+  }
+  return null; // 답변지 미적용 → 3버튼(맞아/글쎄/아니야)
+}
+
 // ── 컨설트 컨트롤러 ──
 // createConsult(saju, {timeKnown, nowYear}) → { next(), answer(), trust, fallback, context }
 // next(): {kind:'step'|'say'|'confirm'|'end', ...} | null(확인 대기 중) | undefined(종료 후)
@@ -82,7 +103,9 @@ export function createConsult(saju, opts = {}) {
   // 고리 컴파일: 스텝 1→5, 스텝당 대표 1 + (확인 예산 내) 보강
   const queue = [];
   const day = STEMS[saju.pillars.일주.stem];
+  const arch = CHEONGAN_ARCHETYPE[day.han];
   queue.push({ kind: 'say', text: `${day.han}(${day.kor}) 일간 — 판은 다 세워뒀어. 위에서부터 하나씩 짚을게.` });
+  if (arch) queue.push({ kind: 'say', text: `${day.han}은 ${arch.물상}의 결이야 — ${arch.성정서사[0]}. 이게 이 판의 중심 기질이라고 볼 수 있어.` });
 
   let asksLeft = 3; // 템포: 확인 버튼 총예산(§7)
   let firstAsked = false;
@@ -96,7 +119,8 @@ export function createConsult(saju, opts = {}) {
     const ask = asksLeft > 0 && (!firstAsked || isEvent || c.impact >= 3.6);
     if (ask) {
       asksLeft--; firstAsked = true;
-      queue.push({ kind: 'confirm', prompt: confirmPrompt(c), ring: c, backup: sel.byStep[s][1] || null });
+      const options = isEvent ? answerSheetOf(c) : null; // EVENT = 답변지(계산된 보기), 그 외 = 3버튼
+      queue.push({ kind: 'confirm', prompt: confirmPrompt(c), ring: c, backup: sel.byStep[s][1] || null, options });
     }
     if (idx === stepsUsed.length - 1) queue.push({ kind: 'sep' });
   });
@@ -124,20 +148,24 @@ export function createConsult(saju, opts = {}) {
       if (ev && ev.kind === 'confirm') pending = ev;
       return ev;
     },
-    answer(choice) {                        // '맞아' | '글쎄' | '아니야'
+    answer(choice) {                        // 답변지 보기 | '맞아' | '글쎄' | '아니야'
       if (!pending) return;
-      const { ring, backup } = pending;
+      const { ring, backup, options } = pending;
       pending = null;
-      if (choice === '맞아') {
+      if (options && options.includes(choice)) {   // 답변지 적중 — 고른 장면을 받아쳐 파고들기(§4)
+        api.trust += 2;
+        queue.unshift({ kind: 'say', text: `그래 — ${choice}. ${ring.facts?.palace ? `${ring.facts.palace}가 맡는 자리 일이 그렇게 온 거야.` : `그 흐름이 이 시기의 결이야.`}` });
+        if (backup) queue.unshift({ kind: 'say', text: `이어서 보면 — ${backup.label}도 같은 결로 붙어 있어.`, tone: backup.tone });
+      } else if (choice === '맞아') {
         api.trust += 2;
         if (backup) queue.unshift({ kind: 'say', text: `역시. 조금 더 파면 — ${backup.label}도 같은 결로 붙어 있어.`, tone: backup.tone });
-      } else if (choice === '아니야') {
+      } else if (choice === '아니야' || choice === '그런 일 없었어') {
         api.trust -= 1;
         const lines = [{ kind: 'say', text: RECAL }];
         if (backup) lines.push({ kind: 'say', text: `대신 이건 계산에 분명히 있어 — ${backup.label}. 이쪽 결일 수 있어.`, tone: backup.tone });
         queue.unshift(...lines);
       }
-      // '글쎄'는 그대로 진행(soften)
+      // '글쎄' 및 그 외 = 그대로 진행(soften)
     },
   };
   return api;
