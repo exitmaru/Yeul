@@ -7,22 +7,15 @@ import { SIPSIN_KEYWORDS } from '../js/knowledge/006-sipsin-keywords.knowledge.j
 import { CHEONGAN_ARCHETYPE } from '../js/knowledge/011-cheongan-archetype.knowledge.js';
 import { JIJI_ARCHETYPE, JIJI_ROLE } from '../js/knowledge/012-jiji-archetype.knowledge.js';
 import { UNSEONG_MEANING } from '../js/knowledge/013-unseong-meaning.knowledge.js';
+// 캐릭터는 UI 무관 리졸버에서(어떤 UI로 바뀌어도 이 import만 유지 — 배치는 여기서 결정)
+import { ganji, imgTag } from '/assets/images/characters/character-map.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const elVar = { 목: 'var(--el-mok)', 화: 'var(--el-hwa)', 토: 'var(--el-to)', 금: 'var(--el-geum)', 수: 'var(--el-su)' };
 
-// ── 60갑자 캐릭터(십이지 마스코트 · 천간 오행색) 매핑 ──
-//   기둥 = 간지(천간 idx s + 지지 idx b) → assets/images/characters/gapja/NN-<gan>-<ji>.webp
-//   NN = 60갑자 전통 순번(01 甲子 … 60 癸亥). STEMS/BRANCHES 인덱스와 정합.
-const GAN_EN = ['gab', 'eul', 'byeong', 'jeong', 'mu', 'gi', 'gyeong', 'sin', 'im', 'gye'];
-const JI_EN = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'sheep', 'monkey', 'rooster', 'dog', 'pig'];
-function gapjaImg(s, b) {
-  let k = 0; while (k < 60 && (k % 10 !== s || k % 12 !== b)) k++;
-  if (k === 60) return ''; // 간지 파리티 어긋나면(비정상) 빈 경로 → 이미지 생략
-  return `/assets/images/characters/gapja/${String(k + 1).padStart(2, '0')}-${GAN_EN[s]}-${JI_EN[b]}.webp`;
-}
-const charTag = (s, b, cls) => { const u = gapjaImg(s, b); return u ? `<img class="${cls}" src="${u}" alt="" loading="lazy" />` : ''; };
+// 기둥(간지) → 60갑자 캐릭터 태그. 매핑·경로 로직은 전부 리졸버가 소유(여기선 배치만).
+const charTag = (s, b, cls, size) => imgTag(ganji(s, b), { size, cls });
 
 // ── 셰이더 톤 프리셋 (grainGradient · 무채 기본 / 레드 대안) ──
 const TONES = {
@@ -69,7 +62,7 @@ function render() {
     const p = r.pillars[k];
     return `<div class="pcell">
       <div class="lab">${k}</div>
-      ${charTag(p.stem, p.branch, 'pchar')}
+      ${charTag(p.stem, p.branch, 'pchar', 44)}
       <div class="ss">${p.stemSipsin}</div>
       ${gl(p.stem, true, k)}${gl(p.branch, false, k)}
       <div class="ss">${p.branchSipsin}</div>
@@ -152,7 +145,7 @@ function openDict(pos, t) {
   const kw = SIPSIN_KEYWORDS[sipsin];
   let body = `
     <div class="d-head">
-      ${charTag(p.stem, p.branch, 'dchar')}
+      ${charTag(p.stem, p.branch, 'dchar', 60)}
       <span class="gl" style="--el:${elVar[g.el]};font-size:44px;margin:0">${g.han}<small>${g.kor}·${g.el}${g.yang ? '·양' : '·음'}</small></span>
       <div><b>${pos} ${isStem ? '천간' : '지지'}</b><div class="hint">${sipsin === '일간(我)' ? '일간(나 자신)' : sipsin}</div></div>
     </div>`;
