@@ -141,6 +141,14 @@ body[data-tone="mono"] .chip.acc { color: var(--ink); border-color: rgba(255, 25
   margin: 0 auto 10px; }
 .inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .inputs label { font-size: 10px; color: var(--sub); font-weight: 700; display: block; }
+.inputs label.w3 { grid-column: 1 / -1; }
+.inputs .checkline { display: flex; align-items: center; gap: 6px; font-size: 11px; padding-top: 4px; }
+.inputs .checkline input { width: auto; margin: 0; accent-color: var(--accent); }
+.inputs .checkline .hint { font-weight: 500; }
+.acct-alt { text-align: center; margin-top: 10px; }
+.acct-alt a { color: var(--accent); text-decoration: none; font-weight: 700; }
+body[data-tone="mono"] .acct-alt a { color: var(--ink); }
+.pcell.dim { opacity: 0.38; filter: grayscale(0.5); }
 .inputs input, .inputs select { width: 100%; margin-top: 3px; padding: 10px 8px; border-radius: 12px;
   border: 1px solid var(--glass-brd); background: rgba(255, 255, 255, 0.07); color: var(--ink);
   font-size: 14px; font-variant-numeric: tabular-nums; }
