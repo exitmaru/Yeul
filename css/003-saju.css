@@ -95,3 +95,16 @@
 
 .saju-app .saju-btn#f-restart { margin-top: 28px; }
 .saju-foot { max-width: 560px; margin: 8px 0 0; font-size: 11px; line-height: 1.5; color: var(--sj-sub); text-align: center; }
+
+/* ── 상담 로그 (고리 진행) ── */
+.saju-log { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.saju-line { padding: 12px 14px; background: var(--sj-card); border: 1px solid var(--sj-line); border-radius: 14px; font-size: 15px; line-height: 1.6; }
+.saju-line p { margin: 0; }
+.saju-line.big { border-color: var(--sj-accent); border-width: 1.5px; }
+.saju-line.step { background: none; border: none; padding: 10px 2px 0; }
+.saju-line .cstep { font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--sj-sub); }
+.saju-line.ask .cq { font-weight: 700; margin-bottom: 10px; }
+.saju-line .ca { margin-top: 8px; color: var(--sj-sub); font-size: 13px; }
+.saju-pick.three { grid-template-columns: 1fr 1fr 1fr; }
+#c-adv { margin-bottom: 8px; }
+#saju-errlog { color: #c00; font-size: 12px; }
