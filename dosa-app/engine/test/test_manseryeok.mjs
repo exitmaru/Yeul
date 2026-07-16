@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import assert from 'node:assert/strict';
 import { computeChart, zonedToUtc, jdn } from '../src/manseryeok.js';
+import { twelveSinsal, auspicious, gongmang } from '../src/sinsal.js';
+import { detectRelations } from '../src/relations.js';
+import { BRANCHES } from '../src/tables.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const { terms } = JSON.parse(readFileSync(join(here, '..', 'data', 'solar_terms.json'), 'utf-8'));
@@ -92,6 +95,65 @@ ok('JDN: 2000-01-01 = 2451545');
   const keepDay = computeChart({ year: 1990, month: 1, day: 1, hour: 23, minute: 40, gender: 'M', solarTimeCorrection: false, lateZiRule: 'keepDay' }, terms);
   assert.equal(keepDay.saju.day.name, '병인'); // 야자시: 일주 유지
   ok('자시 규칙: 정자시(기본)·야자시 옵션 동작');
+}
+
+// ── 신살·공망·합충 (포스텔러 픽스처 대조) ────────────────────
+{
+  const c = computeChart({ year: 1990, month: 1, day: 1, hour: 12, minute: 0, gender: 'F' }, terms);
+  const p = c.pillarsIdx;
+
+  // 12신살: 생년 망신살, 생월 육해살, 생일 겁살, 생시 년살
+  const ts = twelveSinsal(p);
+  assert.equal(ts.year, '망신살');
+  assert.equal(ts.month, '육해살');
+  assert.equal(ts.day, '겁살');
+  assert.equal(ts.hour, '년살');
+  ok('12신살: 망신·육해·겁살·년살 (포스텔러 일치)');
+
+  // 길성 (broad 규칙 = 포스텔러): 자리별 정확 대조
+  const au = auspicious(p, 'broad');
+  const setEq = (got, want, label) => assert.deepEqual(new Set(got), new Set(want), label);
+  setEq(au.hour.stem, ['현침살'], '시간(갑)');
+  setEq(au.hour.branch, ['도화살', '현침살', '양인살'], '시지(오)');
+  setEq(au.day.stem, [], '일간');
+  setEq(au.day.branch, ['학당귀인', '문곡귀인', '홍염살', '역마살'], '일지(인)');
+  setEq(au.month.stem, [], '월간');
+  setEq(au.month.branch, ['도화살'], '월지(자)');
+  setEq(au.year.stem, [], '년간');
+  setEq(au.year.branch, ['천덕귀인', '정록', '역마살'], '년지(사)');
+  ok('길성: 천덕·정록·역마·도화·학당·문곡·홍염·현침·양인 자리까지 일치');
+
+  // 공망: 병인일 → 술해
+  assert.deepEqual(gongmang(p.day).map((b) => BRANCHES[b]), ['술', '해']);
+  ok('공망: 병인일 → 술해');
+
+  // 합충: 갑기합(년간-시간), 자오충(월지-시지), 인오반합(화), 인사형·인사해(년지-일지)
+  const r = detectRelations(p);
+  assert.equal(r.stemHap.length, 1);
+  assert.match(r.stemHap[0].name, /갑기합/);
+  assert.deepEqual(new Set(r.stemHap[0].positions), new Set(['년', '시']));
+  assert.equal(r.chung.length, 1);
+  assert.match(r.chung[0].name, /자오충/);
+  assert.equal(r.samhap.length, 1);
+  assert.match(r.samhap[0].name, /인오반합\(화\)/);
+  assert.equal(r.hyeong.length, 1);
+  assert.match(r.hyeong[0].name, /인사형/);
+  assert.equal(r.hae.length, 1);
+  assert.match(r.hae[0].name, /인사해/);
+  assert.equal(r.stemChung.length + r.yukhap.length + r.pa.length + r.wonjin.length + r.banghap.length, 0);
+  assert.equal(r.gongmangHit.length, 0);
+  ok('합충: 갑기합·자오충·인오반합·인사형·인사해 검출, 오검출 없음');
+}
+
+// 삼합·방합 완합 케이스 (합성 사주: 지지 신자진 + 자)
+{
+  // 2032-12-19 00:30 → 지지에 신자진 포함되는지 대신, 관계 검출만 단위 검증
+  const fake = { year: 44 /*무신*/, month: 12 /*병자*/, day: 15 /*기묘*/, hour: 40 /*갑진*/ };
+  const r = detectRelations(fake); // 지지: 신 자 묘 진
+  assert.ok(r.samhap.some((x) => x.name.includes('신자진삼합')), '신자진 삼합 완합');
+  assert.ok(r.hyeong.some((x) => x.name.includes('자묘')), '자묘형');
+  assert.ok(r.pa.some((x) => x.name.includes('자유파')) === false);
+  ok('합성 케이스: 신자진 완합·자묘형 검출');
 }
 
 console.log(`\n전체 ${n}개 검증 통과`);
