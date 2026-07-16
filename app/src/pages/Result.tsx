@@ -13,15 +13,13 @@ const verdictColor = { 부족: '#B8B2AC', 적정: '#5AA06E', 발달: tokens.colo
 function OhaengStrip() {
   return (
     <Box
+      className="glass"
       sx={{
         mx: 2,
         mb: 1,
         px: 1.5,
         py: 1,
         borderRadius: '16px',
-        bgcolor: tokens.color.elev,
-        backdropFilter: 'blur(8px)',
-        boxShadow: tokens.shadow.card,
         display: 'flex',
         gap: 0.75,
       }}

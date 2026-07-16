@@ -9,7 +9,8 @@ export const tokens = {
   color: {
     page: 'var(--c-page)',
     card: 'var(--c-card)',
-    elev: 'var(--c-elev)',
+    elev: 'var(--glass)',
+    accent: 'var(--accent)',
     ink: 'var(--c-ink)',
     inkSub: 'var(--c-ink-sub)',
     inkFaint: 'var(--c-ink-faint)',

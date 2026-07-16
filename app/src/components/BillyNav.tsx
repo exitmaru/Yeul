@@ -33,7 +33,7 @@ function Tab({ it, active, onTab }: { it: Item; active: boolean; onTab?: (k: str
 /** 홈=중앙 플로팅 버튼(인트로), 좌:오늘/분석 · 우:콘텐츠/마이(설정) */
 export default function BillyNav({ active = 'home', onTab }: { active?: string; onTab?: (k: string) => void }) {
   return (
-    <Box sx={{ position: 'relative', bgcolor: tokens.color.card, borderTop: `1px solid ${tokens.color.border}`, pt: 1, pb: 1.4, display: 'flex', alignItems: 'flex-end' }}>
+    <Box className="glass-soft" sx={{ position: 'relative', borderRadius: 0, pt: 1, pb: 1.4, display: 'flex', alignItems: 'flex-end' }}>
       {left.map((it) => (
         <Tab key={it.key} it={it} active={active === it.key} onTab={onTab} />
       ))}

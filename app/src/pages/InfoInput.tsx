@@ -50,7 +50,7 @@ export default function InfoInput() {
   const [name, setName] = useState(mockProfile.name)
 
   return (
-    <Screen bg={tokens.color.page}>
+    <Screen>
       <StatusBar time="8:58" />
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2.5, pb: 2 }}>
         <Typography sx={{ fontSize: 25, fontWeight: 800, letterSpacing: 'var(--tracking)', mt: 1, mb: 0.5 }}>

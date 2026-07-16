@@ -33,15 +33,12 @@ export default function DialogueBox({
         </Box>
       </Box>
       <Box
+        className="glass"
         sx={{
           position: 'relative',
-          bgcolor: tokens.color.elev,
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.35)',
           borderRadius: '22px',
           p: 2,
           pt: 2.2,
-          boxShadow: tokens.shadow.float,
           minHeight: 104,
         }}
       >

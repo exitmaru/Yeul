@@ -45,7 +45,7 @@ export default function Home() {
   const meadow = dark ? 'radial-gradient(circle at 50% 40%, #33422f, #2a3329)' : 'radial-gradient(circle at 50% 40%, #d9ecc4, #c4e0ac)'
 
   return (
-    <Screen bg={tokens.color.page}>
+    <Screen>
       <Box sx={{ flex: 1, overflowY: 'auto' }}>
         {/* 히어로 */}
         <Box sx={{ background: heroBg, px: 2.5, pb: 2 }}>
@@ -117,7 +117,7 @@ export default function Home() {
           <OhaengMini />
 
           <SectionTitle>한눈에 보기</SectionTitle>
-          <Box sx={{ bgcolor: tokens.color.card, borderRadius: '18px', p: 2, boxShadow: tokens.shadow.card, border: `1px solid ${tokens.color.border}` }}>
+          <Box className="glass" sx={{ borderRadius: '18px', p: 2 }}>
             <Typography sx={{ fontSize: 14.5, fontWeight: 800, color: tokens.color.primary, mb: 0.8 }}>{homeSummary.title}</Typography>
             {homeSummary.lines.map((l, i) => (
               <Typography key={i} sx={{ fontSize: 13.5, color: tokens.color.inkSub, lineHeight: 1.55, mb: 0.3 }}>· {l}</Typography>
@@ -125,7 +125,7 @@ export default function Home() {
           </Box>
 
           {/* 프로모 */}
-          <Box sx={{ mt: 1.5, bgcolor: tokens.color.card, borderRadius: '18px', p: 1.8, display: 'flex', alignItems: 'center', gap: 1.5, border: `1px solid ${tokens.color.border}`, boxShadow: tokens.shadow.card }}>
+          <Box className="glass" sx={{ mt: 1.5, borderRadius: '18px', p: 1.8, display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ fontSize: 28 }}>🎁</Box>
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tokens.color.solar }}>NEW</Typography>

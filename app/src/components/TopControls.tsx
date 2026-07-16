@@ -14,6 +14,7 @@ export default function TopControls() {
       {items.map((it) => (
         <Box
           key={it.label}
+          className="glass-soft"
           sx={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -21,9 +22,6 @@ export default function TopControls() {
             px: 1.4,
             py: 0.7,
             borderRadius: 100,
-            bgcolor: tokens.color.elev,
-            backdropFilter: 'blur(8px)',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
             fontSize: 12.5,
             fontWeight: 700,
             color: tokens.color.ink,

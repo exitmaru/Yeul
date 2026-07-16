@@ -12,12 +12,10 @@ export default function SajuTable({ pillars }: { pillars: Pillar[] }) {
   )
   return (
     <Box
+      className="glass"
       sx={{
-        bgcolor: tokens.color.elev,
-        backdropFilter: 'blur(8px)',
         borderRadius: '18px',
         p: 1.5,
-        boxShadow: tokens.shadow.float,
         display: 'inline-block',
       }}
     >

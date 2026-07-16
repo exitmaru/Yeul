@@ -23,7 +23,7 @@ export default function Loading() {
   }, [nav])
 
   return (
-    <Screen bg={tokens.color.card}>
+    <Screen>
       <StatusBar time="9:00" />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 8 }}>
         <Box
