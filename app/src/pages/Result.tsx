@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material'
+import { useLocation } from 'react-router-dom'
 import Screen from '../components/Screen'
 import StatusBar from '../components/StatusBar'
 import CharacterStage from '../components/CharacterStage'
@@ -10,21 +11,10 @@ import { mockPillars, mockOhaeng, mockReading } from '../data/saju'
 
 const verdictColor = { 부족: '#B8B2AC', 적정: '#5AA06E', 발달: tokens.color.primary, 과다: tokens.color.solar }
 
-function OhaengStrip() {
+function OhaengStrip({ ohaeng }: { ohaeng: typeof mockOhaeng }) {
   return (
-    <Box
-      className="glass"
-      sx={{
-        mx: 2,
-        mb: 1,
-        px: 1.5,
-        py: 1,
-        borderRadius: '16px',
-        display: 'flex',
-        gap: 0.75,
-      }}
-    >
-      {mockOhaeng.map((o) => (
+    <Box className="glass" sx={{ mx: 2, mb: 1, px: 1.5, py: 1, borderRadius: '16px', display: 'flex', gap: 0.75 }}>
+      {ohaeng.map((o) => (
         <Box key={o.key} sx={{ flex: 1, textAlign: 'center' }}>
           <Box sx={{ height: 5, borderRadius: 3, bgcolor: tokens.ohaeng[o.key].bg, mb: 0.6 }} />
           <Typography sx={{ fontSize: 11, fontWeight: 800, color: tokens.ohaeng[o.key].label, lineHeight: 1 }}>{o.key}</Typography>
@@ -36,6 +26,12 @@ function OhaengStrip() {
 }
 
 export default function Result() {
+  // InfoInput에서 계산한 차트를 전달받고, 없으면 샘플로 폴백
+  const loc = useLocation()
+  const state = loc.state as { chart?: { pillars: typeof mockPillars; ohaeng: typeof mockOhaeng } } | null
+  const pillars = state?.chart?.pillars ?? mockPillars
+  const ohaeng = state?.chart?.ohaeng ?? mockOhaeng
+
   return (
     <Screen>
       <CharacterStage tint="linear-gradient(180deg,#bfe0b8,#e8dfa0)" />
@@ -46,10 +42,10 @@ export default function Result() {
 
         {/* 사주 원국표 (좌측 정렬) */}
         <Box sx={{ pl: 2, pr: 2, mb: 1.5 }}>
-          <SajuTable pillars={mockPillars} />
+          <SajuTable pillars={pillars} />
         </Box>
 
-        <OhaengStrip />
+        <OhaengStrip ohaeng={ohaeng} />
 
         {/* 아이샤의 사주 풀이 */}
         <DialogueBox speaker="아이샤">

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Box, Typography } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Screen from '../components/Screen'
 import StatusBar from '../components/StatusBar'
 import OhaengTile from '../components/OhaengTile'
@@ -15,12 +15,13 @@ const tiles = [
 
 export default function Loading() {
   const nav = useNavigate()
+  const loc = useLocation()
   useEffect(() => {
     // 스크린샷용: ?hold 파라미터가 있으면 자동 이동을 멈춘다
     if (new URLSearchParams(window.location.search).has('hold')) return
-    const t = setTimeout(() => nav('/result'), 2400)
+    const t = setTimeout(() => nav('/result', { state: loc.state }), 2400)
     return () => clearTimeout(t)
-  }, [nav])
+  }, [nav, loc.state])
 
   return (
     <Screen>

@@ -6,6 +6,7 @@ import Screen from '../components/Screen'
 import StatusBar from '../components/StatusBar'
 import { tokens } from '../theme'
 import { mockProfile } from '../data/saju'
+import { computeChartUI } from '../engine'
 
 function Label({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
   return (
@@ -48,6 +49,25 @@ export default function InfoInput() {
   const [cal, setCal] = useState(mockProfile.calendar)
   const [marital, setMarital] = useState(mockProfile.marital)
   const [name, setName] = useState(mockProfile.name)
+  const [birth, setBirth] = useState(mockProfile.birth)
+
+  const onSubmit = () => {
+    // "YYYY/MM/DD HH:MM" 파싱 → 엔진 실계산 → 결과로 전달
+    const [datePart, timePart] = birth.trim().split(/\s+/)
+    const [y, mo, da] = (datePart ?? '').split('/').map((n) => parseInt(n, 10))
+    const [h, mi] = (timePart ?? '00:00').split(':').map((n) => parseInt(n, 10))
+    const g = gender === '남자' ? 'M' : 'F'
+    let chart = null
+    if (y && mo && da) {
+      try {
+        chart = computeChartUI({ year: y, month: mo, day: da, hour: h || 0, minute: mi || 0, gender: g })
+      } catch {
+        chart = null // 절기표 범위(1900~2100) 밖 등 → 샘플 폴백
+      }
+    }
+    const profile = { name, gender, calendar: cal, birth, city: mockProfile.city, marital }
+    nav('/loading', { state: chart ? { chart, profile } : undefined })
+  }
 
   return (
     <Screen>
@@ -75,7 +95,7 @@ export default function InfoInput() {
             <MenuItem value="음력">음력</MenuItem>
             <MenuItem value="음력(윤달)">음력(윤달)</MenuItem>
           </Select>
-          <OutlinedInput fullWidth value={mockProfile.birth} readOnly sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)', color: tokens.color.ink }} />
+          <OutlinedInput fullWidth value={birth} onChange={(e) => setBirth(e.target.value)} placeholder="1990/01/01 08:24" sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)', color: tokens.color.ink }} />
         </Stack>
 
         <Label>태어난 도시</Label>
@@ -98,7 +118,7 @@ export default function InfoInput() {
         <Typography sx={{ textAlign: 'center', fontSize: 13, color: tokens.color.inkFaint, mb: 1.2, fontWeight: 600 }}>
           ↻ 다른 사람 정보 입력하기
         </Typography>
-        <Button fullWidth variant="contained" onClick={() => nav('/loading')} sx={{ py: 1.7, fontSize: 17, borderRadius: '14px' }}>
+        <Button fullWidth variant="contained" onClick={onSubmit} sx={{ py: 1.7, fontSize: 17, borderRadius: '14px' }}>
           사주 풀이하기
         </Button>
       </Box>
