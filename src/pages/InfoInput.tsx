@@ -7,6 +7,7 @@ import StatusBar from '../components/StatusBar'
 import { tokens } from '../theme'
 import { mockProfile } from '../data/saju'
 import { computeChartUI } from '../engine'
+import { useAuth } from '../auth'
 
 function Label({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
   return (
@@ -45,6 +46,7 @@ function CorrectionChip({ text, on }: { text: string; on: boolean }) {
 
 export default function InfoInput() {
   const nav = useNavigate()
+  const { user, saveProfile } = useAuth()
   const [gender, setGender] = useState(mockProfile.gender)
   const [cal, setCal] = useState(mockProfile.calendar)
   const [marital, setMarital] = useState(mockProfile.marital)
@@ -66,6 +68,7 @@ export default function InfoInput() {
       }
     }
     const profile = { name, gender, calendar: cal, birth, city: mockProfile.city, marital }
+    if (user) void saveProfile(profile) // 로그인 상태면 계정에 저장(폰 바꿔도 유지)
     nav('/loading', { state: chart ? { chart, profile } : undefined })
   }
 

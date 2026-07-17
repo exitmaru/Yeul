@@ -7,6 +7,7 @@ import BillyNav from '../components/BillyNav'
 import SajuTable from '../components/SajuTable'
 import { tokens } from '../theme'
 import { useMode } from '../mode'
+import { useAuth } from '../auth'
 import { mockProfile, mockPillars, mockOhaeng, todayIljin, homeSummary } from '../data/saju'
 
 function CircleBtn({ children }: { children: ReactNode }) {
@@ -38,6 +39,8 @@ function OhaengMini() {
 export default function Home() {
   const nav = useNavigate()
   const { mode } = useMode()
+  const { user } = useAuth()
+  const displayName = user?.name || mockProfile.name
   const dark = mode === 'dark'
   const heroBg = dark
     ? 'linear-gradient(180deg,#2a2a31 0%, #232329 55%, var(--c-page) 100%)'
@@ -64,7 +67,7 @@ export default function Home() {
               <Typography sx={{ fontSize: 12, fontWeight: 800, color: tokens.color.inkFaint }}>JUL</Typography>
               <Typography sx={{ fontSize: 24, fontWeight: 800, color: tokens.color.inkSub }}>16</Typography>
             </Box>
-            <Typography sx={{ fontSize: 32, fontWeight: 800, color: tokens.color.ink, letterSpacing: '-0.04em' }}>{mockProfile.name}</Typography>
+            <Typography sx={{ fontSize: 32, fontWeight: 800, color: tokens.color.ink, letterSpacing: '-0.04em' }}>{displayName}</Typography>
           </Box>
 
           {/* 말풍선 */}
@@ -135,7 +138,13 @@ export default function Home() {
         </Box>
       </Box>
 
-      <BillyNav active="home" onTab={(k) => (k === 'analysis' || k === 'today') && nav('/loading')} />
+      <BillyNav
+        active="home"
+        onTab={(k) => {
+          if (k === 'analysis' || k === 'today') nav('/loading')
+          else if (k === 'my') nav('/auth')
+        }}
+      />
     </Screen>
   )
 }

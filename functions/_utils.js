@@ -1,0 +1,87 @@
+// Cloudflare Pages Functions 공용 유틸 (순수 JS)
+// D1 바인딩 이름 = DB (env.DB). 스키마는 첫 호출 시 자동 생성(IF NOT EXISTS).
+
+export async function ensureSchema(db) {
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS users (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       email TEXT UNIQUE NOT NULL,
+       password_hash TEXT NOT NULL,
+       name TEXT,
+       created_at INTEGER NOT NULL
+     )`,
+  ).run()
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS sessions (
+       token TEXT PRIMARY KEY,
+       user_id INTEGER NOT NULL,
+       expires_at INTEGER NOT NULL
+     )`,
+  ).run()
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS profiles (
+       user_id INTEGER PRIMARY KEY,
+       data TEXT NOT NULL,
+       updated_at INTEGER NOT NULL
+     )`,
+  ).run()
+}
+
+export function json(data, status = 200, headers = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8', ...headers },
+  })
+}
+
+const enc = new TextEncoder()
+const toHex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
+function fromHex(hex) {
+  const a = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < a.length; i++) a[i] = parseInt(hex.substr(i * 2, 2), 16)
+  return a
+}
+
+// PBKDF2(SHA-256, 100k) — Web Crypto. 저장형식 "salt:hash"
+export async function hashPassword(password, saltHex) {
+  const salt = saltHex ? fromHex(saltHex) : crypto.getRandomValues(new Uint8Array(16))
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits'])
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256)
+  return `${toHex(salt)}:${toHex(bits)}`
+}
+export async function verifyPassword(password, stored) {
+  const [saltHex] = (stored || '').split(':')
+  if (!saltHex) return false
+  const again = await hashPassword(password, saltHex)
+  return again === stored
+}
+
+const SESSION_DAYS = 30
+export function randomToken() {
+  return toHex(crypto.getRandomValues(new Uint8Array(32)))
+}
+export async function createSession(db, userId) {
+  const token = randomToken()
+  const expires = Date.now() + SESSION_DAYS * 864e5
+  await db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').bind(token, userId, expires).run()
+  return token
+}
+export function sessionCookie(token) {
+  return `session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS * 86400}`
+}
+export function clearCookie() {
+  return 'session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0'
+}
+export function getCookie(request, name) {
+  const c = request.headers.get('Cookie') || ''
+  const m = c.match(new RegExp('(?:^|; )' + name + '=([^;]+)'))
+  return m ? m[1] : null
+}
+export async function getUser(db, request) {
+  const token = getCookie(request, 'session')
+  if (!token) return null
+  const s = await db.prepare('SELECT user_id, expires_at FROM sessions WHERE token = ?').bind(token).first()
+  if (!s || s.expires_at < Date.now()) return null
+  return await db.prepare('SELECT id, email, name FROM users WHERE id = ?').bind(s.user_id).first()
+}
+export const normalizeEmail = (e) => (e || '').trim().toLowerCase()
