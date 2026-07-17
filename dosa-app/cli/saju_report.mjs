@@ -19,6 +19,7 @@ const [year, month, day] = ymd.split('-').map(Number);
 const [hour, minute] = hm.split(':').map(Number);
 const unse = argv.includes('--unse') ? argv[argv.indexOf('--unse') + 1] : '병오';
 const outPath = argv.includes('--out') ? argv[argv.indexOf('--out') + 1] : null;
+const lon = argv.includes('--lon') ? Number(argv[argv.indexOf('--lon') + 1]) : 126.978; // 기본 서울
 
 const load = (p) => JSON.parse(readFileSync(join(here, p), 'utf-8'));
 const { terms } = load('../engine/data/solar_terms.json');
@@ -43,7 +44,7 @@ const kb = {
   distilled: loadDistilled(join(here, '../kb/distilled')),
 };
 
-const chart = computeChart({ year, month, day, hour, minute, gender }, terms);
+const chart = computeChart({ year, month, day, hour, minute, gender, longitude: lon }, terms);
 const keyset = chartToKeys(chart, { unseYearName: unse });
 const report = buildReport(chart, keyset, kb);
 const md = `# 사주 리포트 — ${ymd} ${hm} (${gender === 'M' ? '남' : '여'})\n` + toMarkdown(report);
