@@ -125,5 +125,10 @@
 - [9] 평의회 대상 예 = `CLAUDE.md` · `dosa-app/STATUS.md` · `dosa-app/README.md` · `.claude/skills/feed/SKILL.md` · `dosa-app/engine` 핵심 로직(만세력 결정론 조회 축) · 상비 게이트 = `npm run verify`(파생물→vendor드리프트→엔진테스트→증류검증→앱빌드 + `shared/check_refs.py` 경로 게이트, 260717 편입).
 - 세션 인수인계 = `dosa-app/STATUS.md` 선독(위 본문 규정 유지).
 - [11] 완료 기준 = git 산출물 축 한정 — 로컬 Windows 산출물(docx 등) = 파일 실경로 확인으로 갈음.
+- 웹앱 구조(평의회 260717 재이식): `app/` = React+Vite 웹앱(빌드→`dist/`, Cloudflare) — **`app/src/engine/vendor` = 생성물, 직접 수정 금지(`npm run sync:engine`)** · `scripts/` = verify.sh·sync_engine.mjs·build_kb.mjs · `dosa-app/` = 엔진 정본(engine)·지식(kb)·도구(kb-tools)·cli·방법론 보드 · 유튜브 자막 코퍼스 = `youtube-tools/book/fulltext`.
+- [4] 계정 종속 상태(✓ ack·seen 등) = 계정 축 미구현('없음') — 알림·확인 UI 신설 시 설계 시점에 배선, localStorage 단독 금지(골격 [4] 규정).
+- [9] 스코프(평의회 260717): `dosa-app/STATUS.md`의 진행표·작업큐·결정로그 **기록 추가 = 평의회 비대상**(수칙·부팅 절차 등 규범 구간 변경만 대상) · 평의회 결과의 기록 커밋은 재트리거 아님 · 수렴 선언 시 미완 위원은 정지시킨다.
+- [12] 예외: 아카이브 docx("<게시판명> 게시판 글모음.docx" 등)·kb 산출물(`dosa-app/kb/exams/` 시트 등) = 파이프라인 고유 명명(스크립트 assert 계약, [12] 미적용) · KST 강제 = 로그·산출물 타임스탬프 한정(엔진 천문 계산은 진태양시 — 결정 로그 참조).
+- [3]/[8] 운영자 확정 사실(260717 대화 실지시): 제1법칙 `/feed` 루프의 학생·채점 에이전트 팬아웃 = 운영자 상시 지시(임의 병렬 아님). 승인 단위 = {단발 링크: 1루프 기본 · 배치 GO 1회: 파도 1개 — 다음 파도는 파도 보고에 대한 명시 속행 답}. 배치·증류는 [3] 10분 완결 대신 파도 단위 보고로 갈음. ※골격 [3]/[8] 예외의 일반 위임 문구는 nomute-editor 정본 반영 대기(에스컬레이션 = `docs/요구사항_큐.md` 참조).
 
-※ 이식 노트: 마커 구간(SYNC-COMMON-START~END) = 전 레포 공통 골격 — 정본 편집 = muteno/nomute-editor CLAUDE.md에서만(여기서 고치면 다음 전파 PR이 덮는다 · 전파 장치 = nomute-editor `.github/workflows/claude-sync.yml` → 이 레포에 교체 PR 도착). 마커 밖 = 레포 고유(전파 제외).
+※ 이식 노트: 마커 구간(START~END 주석) = 전 레포 공통 골격 — 정본 편집 = muteno/nomute-editor CLAUDE.md에서만(여기서 고치면 다음 전파 PR이 덮는다 · 전파 장치 = nomute-editor `.github/workflows/claude-sync.yml` → 이 레포에 교체 PR 도착). 마커 밖 = 레포 고유(전파 제외).
