@@ -3,25 +3,27 @@
 # 세션 규범: 작업 전/후로 `npm run verify` (또는 bash scripts/verify.sh) 를 돌린다.
 # 하나라도 실패하면 비-0 종료 → 커밋/머지 금지.
 set -euo pipefail
+export TZ='Asia/Seoul'   # 골격 [12] KST 강제 — 러너는 UTC (평의회 260717)
 cd "$(dirname "$0")/.."
 fail=0
 step() { echo ""; echo "▶ $1"; }
 
-step "1/5 파생물 재생성 (unit_bodies.json — gitignore, 새 클론엔 없음) + 기틀 경로 게이트"
-python3 dosa-app/kb-tools/extract_bodies.py
+step "1/5 기틀 게이트(check_refs — 정적이라 최우선) + 파생물 재생성"
 python3 shared/check_refs.py || fail=1
+python3 dosa-app/kb-tools/extract_bodies.py || fail=1
 
 step "2/5 엔진 vendor 동기화 (앱 사본이 원본과 일치하는지 — 드리프트 0 강제)"
 node scripts/sync_engine.mjs --check || { echo "  ✗ vendor 드리프트! 'npm run sync:engine' 후 커밋"; fail=1; }
 
+ENG_LOG=$(mktemp); BUILD_LOG=$(mktemp)
 step "3/5 만세력 엔진 테스트 (포스텔러 픽스처)"
-node dosa-app/engine/test/test_manseryeok.mjs >/tmp/_eng.txt 2>/dev/null && tail -1 /tmp/_eng.txt || { cat /tmp/_eng.txt; fail=1; }
+node dosa-app/engine/test/test_manseryeok.mjs >"$ENG_LOG" 2>/dev/null && tail -1 "$ENG_LOG" || { cat "$ENG_LOG"; fail=1; }
 
 step "4/5 증류 반환각 검증 (인용 축자·출처 실존·elements 엔진 대조)"
 python3 dosa-app/kb-tools/validate_distilled.py || fail=1
 
 step "5/5 앱 프로덕션 빌드 (tsc + vite → dist/)"
-npm run build >/tmp/_build.txt 2>&1 && echo "  ✓ 빌드 성공" || { tail -20 /tmp/_build.txt; fail=1; }
+npm run build >"$BUILD_LOG" 2>&1 && echo "  ✓ 빌드 성공" || { tail -20 "$BUILD_LOG"; fail=1; }
 
 echo ""
 if [ "$fail" -eq 0 ]; then echo "✅ 전체 게이트 통과 — 커밋/머지 가능"; else echo "❌ 게이트 실패 — 위 항목 수정 후 재실행"; exit 1; fi
