@@ -30,15 +30,15 @@ npm run build:kb      # kb 번들(app/src/engine/vendor/kb.json) 재생성
 |---|---|
 | L1 만세력 엔진 (`dosa-app/engine/src`) | ✅ 원국·십신·지장간·십이운성·신살·합충·공망·대운·**구조판정(judge)**·**운대입(unse)** — 테스트 19건, 포스텔러 픽스처 일치 |
 | L2 색인 | ✅ unit_index(598키) + interaction_index(103키/13,641문단) + impression_index(46키/2,969문단) |
-| L2 증류 | ✅ **일주 60/60** + **image 13/19**(천간 무·기·경·신·임·계 6키 남음) — 인용 205건 축자 검증 |
+| L2 증류 | ✅ **일주 60/60** + **image 19/19**(2026-07-17 천간 6키 완성, 이미지층 종결) — 인용 223건 축자 검증 |
 | L3 리포트 (`report.js`) | ✅ 구조판정→일주(증류)→십신→합충→신살→대운→세운, 출처 병기 |
 | **앱 (`app/`, React+Vite)** | ✅ 엔진 실연결 + **L3 근거 리딩 연결 완료**(`Result.tsx`가 `toReading`→출처 표기, 지어낸 mockReading 제거). 빌드→`dist/`, `wrangler.toml`로 Cloudflare 배포 |
 | L4 도사 대화(LLM) | ⬜ 서술 표준만 확정 — API 연결 미착수 |
-| 트레이닝/승계 | ✅ `/saju`·`/feed` 스킬 + STATUS + `npm run verify` 게이트 |
+| 트레이닝/승계 | ✅ `/saju`·`/feed v2`(블라인드 시험 루프 — 루트 CLAUDE.md **제1법칙**) 스킬 + `probe_coverage.py` + STATUS + `npm run verify` 게이트 |
 
 ## 다음 작업 큐 (우선순위)
 
-1. **image 증류 6키 마무리** (천간 무·기·경·신·임·계). 번들 재생성: `python3 dosa-app/kb-tools/prepare_interaction_bundles.py --index impression_index.json image/cheongan/무 …` → 증류(DISTILL_GUIDE.md image 스키마) → verify → 커밋.
+1. **도화도르 채널 배치 트레이닝** — 신규 128편(목록 준비됨: 공개 188 중 60 기보유) `/feed v2` 파도 20편 단위, 파도마다 회색지대 질문·표본 시트 사용자 제출. **사용자 GO 대기.**
 2. **상호작용 상위 30키 + 통변방법론 28편 증류** → frame/·chain/ 키가 근거 유닛을 갖게 됨.
 3. **직업→십신 역매핑 사전** (금융=편재, 학문=인성 …) — 운명전쟁49 분석에서 도출. 후속 질문 처리용.
 4. **앱 KB 번들 경량화** — 현재 kb.json 1.45MB가 JS에 인라인돼 번들 2MB(gzip 522KB). `app/public/`로 빼서 런타임 fetch하거나 bodies를 unse/* 로만 축소.
@@ -47,11 +47,17 @@ npm run build:kb      # kb 번들(app/src/engine/vendor/kb.json) 재생성
 7. **L4 도사 대화(API)** — Pages Function 프록시, L4 서술 표준.
 8. 귀문 인상론 보강(유일 커버리지 공백) · 대운수 반올림 유파 옵션.
 
+## 사용자 액션 아이템 (세션이 대신 못 하는 것 — 잊지 말 것)
+
+- [ ] **기존 Cloudflare "saju" 프로젝트 삭제/연결해제.** 웹 빌드 없던 시절 대시보드 설정 잔재라 커밋마다 빨간 X를 냄. 정상 배포처는 **"saju02"**(2026-07-17 배포 성공: claude-organize-extracted-fi.saju02-7n8.pages.dev). saju 지우면 노이즈 사라짐.
+- [ ] (선택) 도사 캐릭터 컨셉·일러스트, 일진 다이어리 UI/UX 제공 → L5 연결.
+
 ## 결정 로그 (왜 — 뒤집으려면 사용자 승인)
 
 - 신강신약 = 보드 110점제(천간각10, 지지 년15·월30·일15·시10; 30/45/60). 12신살=월일시지는 년지 삼합·년지는 일지 기준. 도화/역마/화개 기본=broad(왕지/생지/고지 글자).
 - 일진 = (JDN+49)%60. 시주경계=진태양시(경도×4분). 자시 기본=정자시(23시 익일).
 - 검색(RAG) 금지 — 키 결정론 조회만. 증류 인용=축자, 이견=관점차이 병기.
+- 지식 주입 품질 게이트 = **블라인드 시험 루프**(/feed v2, 루트 CLAUDE.md 제1법칙): 영상=답안지, 질문 역추출→주입 전 1차 시험→격차 원인(부재/미발견/관점차이) 유추→정제 반영→새 블라인드 학생 재시험, 3라운드 실패 시 사용자 승격. 키 스캐너 판정은 전처리로 강등, **0단계 수집기는 판단 금지**(`fetch_transcripts.py` — 음성 전량 수집, NO_SUBS/INCOMPLETE/THROTTLED 구분·페이싱 내장) — 2026-07-17 사용자 설계.
 - 앱 엔진은 **벤더링**(정본 복사) — 손편집 금지, sync 스크립트로만. kb.json은 build:kb 생성물(gitignore).
 
 ## 새 세션 부팅 (다른 계정/모델 동일)

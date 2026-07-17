@@ -7,8 +7,9 @@ cd "$(dirname "$0")/.."
 fail=0
 step() { echo ""; echo "▶ $1"; }
 
-step "1/5 파생물 재생성 (unit_bodies.json — gitignore, 새 클론엔 없음)"
+step "1/5 파생물 재생성 (unit_bodies.json — gitignore, 새 클론엔 없음) + 기틀 경로 게이트"
 python3 dosa-app/kb-tools/extract_bodies.py
+python3 shared/check_refs.py || fail=1
 
 step "2/5 엔진 vendor 동기화 (앱 사본이 원본과 일치하는지 — 드리프트 0 강제)"
 node scripts/sync_engine.mjs --check || { echo "  ✗ vendor 드리프트! 'npm run sync:engine' 후 커밋"; fail=1; }
