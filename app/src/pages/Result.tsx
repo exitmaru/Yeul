@@ -33,7 +33,7 @@ export default function Result() {
   const state = loc.state as { chart?: { pillars: typeof mockPillars; ohaeng: typeof mockOhaeng }; input?: ChartInput } | null
   const pillars = state?.chart?.pillars ?? mockPillars
   const ohaeng = state?.chart?.ohaeng ?? mockOhaeng
-  const reading = state?.input ? toReading(state.input) : groundedReading
+  const reading = state?.input ? toReading(state.input) : groundedReading()
   // 일주 = 일간+일지 (그 사람의 60갑자). 지신 스티커로 표시.
   const ilju = pillars.find((p) => p.isDayMaster)
   const iljuGanji = ilju ? ilju.ganK + ilju.jiK : undefined

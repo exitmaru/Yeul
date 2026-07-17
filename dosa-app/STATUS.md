@@ -11,7 +11,7 @@
 2. **단일 진실 = main.** 작업 브랜치는 짧게 쓰고 빨리 머지. 다른 세션이 main을 전진시켰으면 내 브랜치에 먼저 병합하고 이어간다.
 3. **기계산출물 손편집 금지**: 색인(`kb/*_index.json`)·`kb.json`·`unit_bodies.json`·`app/src/engine/vendor/*`는 전부 생성물. 값 바꾸려면 **생성 스크립트를 고쳐 재실행**한다.
    - 엔진 정본 = `dosa-app/engine/src/`. 앱 사본은 `npm run sync:engine`으로만 갱신.
-4. **커밋 전 `npm run verify` 통과 필수** (5게이트: 파생물→vendor드리프트→엔진테스트→증류검증→앱빌드). 하나라도 빨강이면 커밋 금지.
+4. **커밋 전 `npm run verify` 통과 필수** (6게이트: 파생물→vendor드리프트→엔진테스트→증류검증+리플레이→앱빌드→브라우저 스모크). 하나라도 빨강이면 커밋 금지.
 5. **작업 후 이 STATUS 갱신** (진행표·작업큐). 다음 세션에게 남기는 쪽지다.
 
 ## 명령어 (전부 저장소 루트에서)
@@ -20,7 +20,7 @@
 npm run verify        # 만능 품질 게이트 (커밋 전 필수)
 npm run build         # prebuild(파생물+sync+kb번들) → app tsc+vite → dist/  (Cloudflare가 이걸 씀)
 npm run sync:engine   # dosa-app/engine/src → app/src/engine/vendor 재생성
-npm run build:kb      # kb 번들(app/src/engine/vendor/kb.json) 재생성
+npm run build:kb      # kb 번들(app/public/kb-<hash>.json + vendor/kb_ref.json) 재생성
 # 스킬: /saju <생년월일시> (근거 리포트+풀이) · /feed <유튜브URL> (지식 주입)
 ```
 
@@ -32,14 +32,14 @@ npm run build:kb      # kb 번들(app/src/engine/vendor/kb.json) 재생성
 | L2 색인 | ✅ unit_index(598키) + interaction_index(103키/13,641문단) + impression_index(46키/2,969문단) |
 | L2 증류 | ✅ **일주 60/60** + **image 19/19**(2026-07-17 천간 6키 완성, 이미지층 종결) — 인용 223건 축자 검증 |
 | L3 리포트 (`report.js`) | ✅ 구조판정→일주(증류)→십신→합충→신살→대운→세운, 출처 병기 |
-| **앱 (`app/`, React+Vite)** | ✅ 엔진 실연결 + **L3 근거 리딩 연결 완료**(`Result.tsx`가 `toReading`→출처 표기, 지어낸 mockReading 제거). 빌드→`dist/`, `wrangler.toml`로 Cloudflare 배포 |
+| **앱 (`app/`, React+Vite)** | ✅ 엔진 실연결 + **L3 근거 리딩 연결 완료**(`Result.tsx`가 `toReading`→출처 표기). KB는 `app/public/kb.json` 런타임 fetch(Q05 경량화 — JS 번들 0.57MB·kb 독립 캐시, `loadKb()` 게이트). 빌드→`dist/`, `wrangler.toml`로 Cloudflare 배포 |
 | L4 도사 대화(LLM) | ⬜ 서술 표준만 확정 — API 연결 미착수 |
 | 트레이닝/승계 | ✅ `/saju`·`/feed v2`(블라인드 시험 루프 — 루트 CLAUDE.md **제1법칙**) 스킬 + `probe_coverage.py` + STATUS + `npm run verify` 게이트 |
 
 ## 다음 작업 큐 (우선순위)
 
-1. **앱 KB 번들 경량화** ← 배치보다 선행(평의회 260717: 파도마다 커밋=배포라 kb.json 인라인 증가가 방문자 번들에 복리 적립). 현재 kb.json 1.45MB → `app/public/` 런타임 fetch 분리 또는 bodies 축소.
-2. **배치 전 레일 3종**(평의회 260717 제안): ⓐ`replay_exams.py` — PASS 시트 patterns 재실행 회귀 게이트(verify 편입) ⓑL3 리포트 골든 스냅샷 3건(조립 이음새 계약 테스트) ⓒ증류 단일출처 플래그 린트(validate_distilled 확장).
+1. ~~앱 KB 번들 경량화~~ **완료(← Q.05, 260717)** — kb.json을 JS 인라인에서 `app/public/kb.json` 런타임 fetch로 분리. JS 번들 2.07MB→0.57MB(gzip 190KB), kb 독립 캐시(gzip 332KB). main.tsx loadKb() 게이트 + saju.ts 지연 평가(모듈 시점 호출 제거). 브라우저 스모크(홈+/result 딥링크) 통과.
+2. **배치 전 레일 3종**(평의회 260717 제안): ⓐ`replay_exams.py` **완료(← Q.04)** — verify 4단계 편입, 1호 시드 = 배관 박제 시트(`dosa-app/kb/exams/JMCgXyFr2hg.json` — 주입 고아 결함 재현→수선 PASS) ⓑL3 리포트 골든 스냅샷 3건(조립 이음새 계약 테스트) ⓒ증류 단일출처 플래그 린트(validate_distilled 확장).
 3. **도화도르 채널 배치 트레이닝** — 신규 128편(목록 준비됨: 공개 188 중 60 기보유) `/feed v2` 파도 20편 단위, 파도마다 회색지대 질문·표본 시트 사용자 제출. **사용자 GO 대기**(GO 시 원장 Q 채번, GO 1회 = 파도 1개).
 4. **상호작용 상위 30키 + 통변방법론 28편 증류** → frame/·chain/ 키가 근거 유닛을 갖게 됨.
 5. **직업→십신 역매핑 사전** (금융=편재, 학문=인성 …) — 운명전쟁49 분석에서 도출. 후속 질문 처리용.
@@ -59,11 +59,12 @@ npm run build:kb      # kb 번들(app/src/engine/vendor/kb.json) 재생성
 - 일진 = (JDN+49)%60. 시주경계=진태양시(경도×4분). 자시 기본=정자시(23시 익일).
 - 검색(RAG) 금지 — 키 결정론 조회만. 증류 인용=축자, 이견=관점차이 병기.
 - 지식 주입 품질 게이트 = **블라인드 시험 루프**(/feed v2, 루트 CLAUDE.md 제1법칙): 영상=답안지, 질문 역추출→주입 전 1차 시험→격차 원인(부재/미발견/관점차이) 유추→정제 반영→새 블라인드 학생 재시험, 3라운드 실패 시 사용자 승격. 키 스캐너 판정은 전처리로 강등, **0단계 수집기는 판단 금지**(`fetch_transcripts.py` — 음성 전량 수집, NO_SUBS/INCOMPLETE/THROTTLED 구분·페이싱 내장) — 2026-07-17 사용자 설계.
+- 유튜브 주입 정본 경로 = `ingest_transcript.py`(stage→fulltext+yt_units 멱등 등록) — `check_new_video --save` 주입 금지(score<2 무음 거부+색인 고아, 평의회 260717 발견①·박제 시트 실증) — 2026-07-17.
 - 앱 엔진은 **벤더링**(정본 복사) — 손편집 금지, sync 스크립트로만. kb.json은 build:kb 생성물(gitignore).
 
 ## 새 세션 부팅 (다른 계정/모델 동일)
 
 ```bash
-npm run verify   # 이 한 줄이 파생물 재생성 + 5게이트 전부 (통과하면 정상)
+npm run verify   # 이 한 줄이 파생물 재생성 + 6게이트 전부 (통과하면 정상)
 # 사주: /saju 1993-11-30 08:00 M 순천   |   지식주입: /feed <유튜브URL>
 ```
