@@ -7,6 +7,8 @@ import assert from 'node:assert/strict';
 import { computeChart, zonedToUtc, jdn } from '../src/manseryeok.js';
 import { twelveSinsal, auspicious, gongmang } from '../src/sinsal.js';
 import { judgeStructure } from '../src/judge.js';
+import { dayPillarIdx, diaryDayInfo, nextYearsWithBranch } from '../src/unse.js';
+import { sexName } from '../src/tables.js';
 import { detectRelations } from '../src/relations.js';
 import { BRANCHES } from '../src/tables.js';
 
@@ -186,6 +188,17 @@ ok('JDN: 2000-01-01 = 2451545');
   assert.ok(j2.keys.includes('frame/무식상'));
   assert.ok(j2.keys.includes('chain/관인상생'));
   ok('구조 판정: 계유년 사주 75/110 신강·득령, 겨울생 화 부재(조후 미충족)·무식상');
+}
+
+// ── 운 대입(일진 다이어리) ────────────────────────────────────
+{
+  const c = computeChart({ year: 1993, month: 11, day: 30, hour: 8, minute: 0, gender: 'M', longitude: 127.4872 }, terms);
+  assert.equal(sexName(dayPillarIdx(2026, 7, 22)), '정유');
+  const info = diaryDayInfo(c, 2026, 7, 22);
+  assert.ok(info.relations.some((r) => r.type === '충' && r.name === '묘유충' && r.with === '일'), '정유일 → 일지 묘유충');
+  assert.equal(info.stemTenGod, '식신'); // 을 기준 정화
+  assert.deepEqual(nextYearsWithBranch(9, 2026, 2), [2029, 2041]); // 유가 오는 해
+  ok('운 대입: 정유일 일지 묘유충 자동 태그·유년 환산(2029)');
 }
 
 console.log(`\n전체 ${n}개 검증 통과`);

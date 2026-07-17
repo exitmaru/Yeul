@@ -6,7 +6,7 @@
 `사주명리 대전 — 주제별 통합본 (정제).docx` = 같은 2,504글을 **주제별 17장**(음양오행→간지→합충→…→재미로 읽는 사주→기타역학→부록)으로 재분류하고 이론 장은 입문→심화 레벨 순 배열한 책 형태 문서. 분류 자산은 전부 `refine-tools/`에: `units.json`(글 단위 추출), `labels/seg_*.json`(Opus 분류+Fable 검수), `labels_overrides.json`(수동 재판정·가십 이동 — **분류를 고치려면 이 파일에 key→C01~C17 추가**), `levels/CH_*.json`(장별 레벨·진행방향), 재조립은 `python refine-tools/assemble_book.py`(라벨 커버리지·글 수 assert 내장). 글 추가 시: 정제본 갱신 → `extract_units.py` → 새 글만 분류(세그먼트 추가) → `assemble_book.py`.
 소스별 파이프라인: 플러스명리학(saju.sajuplus.net) → `sajuplus-tools/`, 안녕·사주명리 티스토리(yavares.tistory.com) → `tistory-tools/`, 초코서당(chocosd.com) → `chocosd-tools/`, 다시 배우는 사주명리(www.sajustudy.com) → `sajustudy-tools/`, 도화로운(dohwaroun.com, 아임웹) → `dohwaroun-tools/`.
 디자인 참고자료: 포스텔러 만세력(pro.forceteller.com) 구조·디자인 스크랩 → `forceteller-ref/` (README.md에 라우트맵·디자인 토큰·API·자동화 함정 정리; React+MUI+emotion이라 스냅샷은 CSSOM 직렬화 내장본).
-사주풀이 웹앱('명리학 도사' 미연시풍, Cloudflare Pages 배포) 설계 → `dosa-app/README.md`. **절대 원칙**: 근거는 코퍼스 출처 필수, 자료 선택은 검색(RAG)이 아니라 만세력 계산 결과가 키가 되는 결정론 조회, LLM은 서술층일 뿐(없어도 조립식 리포트로 완결 동작), 지식은 요소별 정제 유닛으로 증류(문헌 이견은 관점차이로 병기).
+사주풀이 웹앱('명리학 도사' 미연시풍) — **새 세션은 무조건 `dosa-app/STATUS.md`부터 읽을 것**(진행 상태·다음 작업 큐·결정 로그·부팅 절차 = 세션 간 인수인계 문서, 작업 후 갱신 필수). 설계·절대 원칙·L4 서술 표준은 `dosa-app/README.md`. 스킬: **/saju**(생년월일시→근거 리포트+풀이), **/feed**(유튜브 링크 검수→주입→색인 갱신→보완 보고). 파생물(unit_bodies.json 등)은 gitignore — 부팅 시 `python3 dosa-app/kb-tools/extract_bodies.py`로 재생성. **절대 원칙**: 근거는 코퍼스 출처 필수, 자료 선택은 검색(RAG)이 아니라 만세력 계산 결과가 키가 되는 결정론 조회, LLM은 서술층일 뿐(없어도 조립식 리포트로 완결 동작), 지식은 요소별 정제 유닛으로 증류(문헌 이견은 관점차이로 병기).
 
 ## 파이프라인 (시행착오 없이 바로 실행)
 

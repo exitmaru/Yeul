@@ -1,0 +1,62 @@
+# STATUS — 세션 인수인계 (어느 세션·어느 모델이든 이 파일부터)
+
+> 갱신: 2026-07-17. 설계 원칙은 `dosa-app/README.md`(절대 원칙 4 + L4 서술 표준).
+> **이 문서는 세션의 유일한 기억이다 — 작업할 때마다 갱신할 것.**
+
+## 🔒 세션 수칙 (누락·드리프트 0 — 최우선)
+
+퀄리티는 세션 실력이 아니라 **통과해야 하는 검사기**가 보장한다. 그래서:
+
+1. **시작**: 이 STATUS 읽기 → `git fetch` → `origin/main`이 앞섰으면 **즉시 병합**(장수 분기 금지 — 2026-07-17 앱#39와 지식#40이 갈라진 사고가 그 증거). 그다음 `npm run verify`로 파생물 재생성 + 상태 확인.
+2. **단일 진실 = main.** 작업 브랜치는 짧게 쓰고 빨리 머지. 다른 세션이 main을 전진시켰으면 내 브랜치에 먼저 병합하고 이어간다.
+3. **기계산출물 손편집 금지**: 색인(`kb/*_index.json`)·`kb.json`·`unit_bodies.json`·`app/src/engine/vendor/*`는 전부 생성물. 값 바꾸려면 **생성 스크립트를 고쳐 재실행**한다.
+   - 엔진 정본 = `dosa-app/engine/src/`. 앱 사본은 `npm run sync:engine`으로만 갱신.
+4. **커밋 전 `npm run verify` 통과 필수** (5게이트: 파생물→vendor드리프트→엔진테스트→증류검증→앱빌드). 하나라도 빨강이면 커밋 금지.
+5. **작업 후 이 STATUS 갱신** (진행표·작업큐). 다음 세션에게 남기는 쪽지다.
+
+## 명령어 (전부 저장소 루트에서)
+
+```bash
+npm run verify        # 만능 품질 게이트 (커밋 전 필수)
+npm run build         # prebuild(파생물+sync+kb번들) → app tsc+vite → dist/  (Cloudflare가 이걸 씀)
+npm run sync:engine   # dosa-app/engine/src → app/src/engine/vendor 재생성
+npm run build:kb      # kb 번들(app/src/engine/vendor/kb.json) 재생성
+# 스킬: /saju <생년월일시> (근거 리포트+풀이) · /feed <유튜브URL> (지식 주입)
+```
+
+## 완성 상태 (전부 verify 통과)
+
+| 층 | 상태 |
+|---|---|
+| L1 만세력 엔진 (`dosa-app/engine/src`) | ✅ 원국·십신·지장간·십이운성·신살·합충·공망·대운·**구조판정(judge)**·**운대입(unse)** — 테스트 19건, 포스텔러 픽스처 일치 |
+| L2 색인 | ✅ unit_index(598키) + interaction_index(103키/13,641문단) + impression_index(46키/2,969문단) |
+| L2 증류 | ✅ **일주 60/60** + **image 13/19**(천간 무·기·경·신·임·계 6키 남음) — 인용 205건 축자 검증 |
+| L3 리포트 (`report.js`) | ✅ 구조판정→일주(증류)→십신→합충→신살→대운→세운, 출처 병기 |
+| **앱 (`app/`, React+Vite)** | ✅ 엔진 실연결 + **L3 근거 리딩 연결 완료**(`Result.tsx`가 `toReading`→출처 표기, 지어낸 mockReading 제거). 빌드→`dist/`, `wrangler.toml`로 Cloudflare 배포 |
+| L4 도사 대화(LLM) | ⬜ 서술 표준만 확정 — API 연결 미착수 |
+| 트레이닝/승계 | ✅ `/saju`·`/feed` 스킬 + STATUS + `npm run verify` 게이트 |
+
+## 다음 작업 큐 (우선순위)
+
+1. **image 증류 6키 마무리** (천간 무·기·경·신·임·계). 번들 재생성: `python3 dosa-app/kb-tools/prepare_interaction_bundles.py --index impression_index.json image/cheongan/무 …` → 증류(DISTILL_GUIDE.md image 스키마) → verify → 커밋.
+2. **상호작용 상위 30키 + 통변방법론 28편 증류** → frame/·chain/ 키가 근거 유닛을 갖게 됨.
+3. **직업→십신 역매핑 사전** (금융=편재, 학문=인성 …) — 운명전쟁49 분석에서 도출. 후속 질문 처리용.
+4. **앱 KB 번들 경량화** — 현재 kb.json 1.45MB가 JS에 인라인돼 번들 2MB(gzip 522KB). `app/public/`로 빼서 런타임 fetch하거나 bodies를 unse/* 로만 축소.
+5. **앱 출생지→경도 전달** (`buildReading`/`computeChartUI`에 longitude). 현재 서울 고정 → 순천 등 오차.
+6. **일진 다이어리 UI** — 엔진 `diaryDayInfo` 완성, UI는 사용자 제공 예정.
+7. **L4 도사 대화(API)** — Pages Function 프록시, L4 서술 표준.
+8. 귀문 인상론 보강(유일 커버리지 공백) · 대운수 반올림 유파 옵션.
+
+## 결정 로그 (왜 — 뒤집으려면 사용자 승인)
+
+- 신강신약 = 보드 110점제(천간각10, 지지 년15·월30·일15·시10; 30/45/60). 12신살=월일시지는 년지 삼합·년지는 일지 기준. 도화/역마/화개 기본=broad(왕지/생지/고지 글자).
+- 일진 = (JDN+49)%60. 시주경계=진태양시(경도×4분). 자시 기본=정자시(23시 익일).
+- 검색(RAG) 금지 — 키 결정론 조회만. 증류 인용=축자, 이견=관점차이 병기.
+- 앱 엔진은 **벤더링**(정본 복사) — 손편집 금지, sync 스크립트로만. kb.json은 build:kb 생성물(gitignore).
+
+## 새 세션 부팅 (다른 계정/모델 동일)
+
+```bash
+npm run verify   # 이 한 줄이 파생물 재생성 + 5게이트 전부 (통과하면 정상)
+# 사주: /saju 1993-11-30 08:00 M 순천   |   지식주입: /feed <유튜브URL>
+```
