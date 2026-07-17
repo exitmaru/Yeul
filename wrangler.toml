@@ -1,0 +1,4 @@
+# Cloudflare Pages 빌드 설정 — 저장소 우선 적용(대시보드 값 오버라이드).
+# 루트 `npm run build`가 app(Vite)을 빌드해 루트 dist/로 내보내므로 출력 경로를 dist로 고정.
+name = "saju"
+pages_build_output_dir = "dist"
