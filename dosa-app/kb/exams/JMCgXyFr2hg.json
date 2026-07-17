@@ -2,7 +2,7 @@
  "vid": "JMCgXyFr2hg",
  "title": "[사주] 처음 본 구독자 사주 전화 데이트하며 맞혀봤습니다🔮ㅣ직업·연애·성격 일주 추리",
  "type": "plumbing-regression",
- "status": "open",
+ "status": "pass",
  "note": "Q04 배관 박제 시트 — 평의회 260717 발견①(주입 고아) 재현·수선 검증용. 질문/패턴은 이 영상 고유 구절이라 '주입 성공 = 적중>0'이 배관 건강의 기계 신호가 된다. replay 게이트 1호 시드.",
  "questions": [
   {
@@ -25,6 +25,15 @@
      "grade": "불일치",
      "gap_cause": "부재",
      "action": "평의회 260717 발견①(주입 고아) 박제 완료 — 수선(ingest_transcript.py) 후 라운드2 재시험 예정"
+    },
+    {
+     "n": 2,
+     "student": "기계(배관 재현 — 블라인드 시험 아님)",
+     "blind": false,
+     "answer_summary": "수선 배관(ingest_transcript.py) 주입 → yt_filter(등재 core) → scan 2종 → probe --include-self 적중 2건(패턴 2/2, 출처 yt:JMCgXyFr2hg). 전 0건 → 후 2건.",
+     "grade": "동등",
+     "gap_cause": "부재",
+     "action": "ingest_transcript.py 신설(fulltext 복사+yt_units 멱등 등록), SKILL 4-c ⓐ 교체, check_new_video 독스트링 정정 — PASS"
     }
    ]
   }
