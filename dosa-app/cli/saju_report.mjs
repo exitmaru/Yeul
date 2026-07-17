@@ -22,10 +22,25 @@ const outPath = argv.includes('--out') ? argv[argv.indexOf('--out') + 1] : null;
 
 const load = (p) => JSON.parse(readFileSync(join(here, p), 'utf-8'));
 const { terms } = load('../engine/data/solar_terms.json');
+// 증류본 로드 (kb/distilled/**/*.json → key 맵)
+import { readdirSync, statSync } from 'node:fs';
+function loadDistilled(dir) {
+  const out = {};
+  const walk = (d) => {
+    for (const f of readdirSync(d)) {
+      const p = join(d, f);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (f.endsWith('.json')) { const u = JSON.parse(readFileSync(p, 'utf-8')); out[u.key] = u; }
+    }
+  };
+  try { walk(dir); } catch { /* 증류본 없으면 원문 발췌로 동작 */ }
+  return out;
+}
 const kb = {
   index: load('../kb/unit_index.json'),
   aliases: Object.fromEntries(Object.entries(load('../kb/aliases.json')).filter(([k]) => !k.startsWith('_'))),
   bodies: load('../kb/unit_bodies.json'), // extract_bodies.py로 생성 (git 제외)
+  distilled: loadDistilled(join(here, '../kb/distilled')),
 };
 
 const chart = computeChart({ year, month, day, hour, minute, gender }, terms);

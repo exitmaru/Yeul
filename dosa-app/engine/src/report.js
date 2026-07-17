@@ -26,6 +26,8 @@ function excerpt(entry, kb, nParas = 4) {
 }
 
 function topicBlock(key, kb, { maxUnits = 2, nParas = 4 } = {}) {
+  // 증류본이 있으면 우선 사용 (요소별 정제 유닛 — 원문 발췌보다 조밀)
+  if (kb.distilled && kb.distilled[key]) return { key, distilled: kb.distilled[key] };
   const units = lookupUnits(key, kb);
   if (!units.length) return { key, empty: true, note: '소장 문헌에 상세 없음' };
   return { key, excerpts: units.slice(0, maxUnits).map((u) => excerpt(u, kb, nParas)).filter(Boolean), totalUnits: units.length };
@@ -178,6 +180,25 @@ export function toMarkdown(report) {
       if (!b) return;
       if (b.empty) { L.push(`\n**${label || b.key}** — ${b.note}`); return; }
       if (label) L.push(`\n### ${label}`);
+      if (b.distilled) {
+        const d = b.distilled;
+        const dd = d.distilled || {};
+        if (dd['핵심']) L.push(`**${dd['핵심']}**\n`);
+        for (const sec of ['성격', '직업', '관계', '주의']) {
+          if (dd[sec] && dd[sec].length) {
+            L.push(`**${sec}**`);
+            for (const item of dd[sec]) L.push(`- ${item}`);
+            L.push('');
+          }
+        }
+        if (dd['물상']) L.push(`물상: ${dd['물상']}\n`);
+        for (const q of d['인용'] || []) L.push(`> "${q.text}" — ${q.src}`);
+        for (const pd of d['관점차이'] || []) {
+          L.push(`\n*관점차이 — ${pd['주제']}*: ${pd['견해'].map((v) => `${v['내용']} (${v.src.split('#')[0]})`).join(' ↔ ')}`);
+        }
+        L.push('');
+        return;
+      }
       for (const ex of b.excerpts) {
         for (const p of ex.paras) L.push(`${p}\n`);
         if (ex.truncated) L.push(`(…전문 ${ex.totalParas}문단 중 발췌)`);
