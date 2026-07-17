@@ -56,3 +56,17 @@ export interface TodayIljin {
 }
 
 export function todayIljin(year: number, month: number, day: number): TodayIljin
+
+// L3 근거 리포트 (섹션 구조는 report.js 참조 — 앱은 필요한 필드만 골라 씀)
+export interface ReportBundle {
+  input: unknown
+  sections: Array<{
+    id: string
+    title: string
+    lines?: string[]
+    block?: { distilled?: any; excerpts?: Array<{ paras: string[]; source: { doc: string; title: string }; totalParas: number }>; empty?: boolean }
+    [k: string]: unknown
+  }>
+}
+export function buildReading(input: ChartInput, unseYearName?: string): ReportBundle
+export const kbCoverage: { distilledKeys: number; indexKeys: number }

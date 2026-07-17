@@ -2,7 +2,10 @@
 // 엔진은 순수 ESM(브라우저 안전). 절기표는 정적 JSON을 주입.
 // dosa-app/engine에서 벤더링한 사본(자립형 빌드용). 원본 갱신 시 vendor/도 동기화.
 import { computeChart } from './vendor/manseryeok.js'
+import { chartToKeys } from './vendor/keyset.js'
+import { buildReport } from './vendor/report.js'
 import solarTerms from './vendor/data/solar_terms.json'
+import kb from './vendor/kb.json'
 
 const terms = solarTerms.terms
 
@@ -63,6 +66,17 @@ export function computeChartUI(input) {
     dayMaster: { ganK: s.day.stem, gan: s.day.hanja[0], element: STEM[s.day.stem][0] },
   }
 }
+
+// L3 근거 리포트 — computeChart → chartToKeys → buildReport(번들 KB). 절대 원칙: 검색 없이 키 결정론 조회.
+// 반환 sections는 전부 코퍼스 근거(증류본/발췌+출처). 근거 없으면 empty(=소장 문헌 없음).
+export function buildReading(input, unseYearName = '병오') {
+  const chart = computeChart(input, terms)
+  const keyset = chartToKeys(chart, { unseYearName })
+  return buildReport(chart, keyset, kb) // { input, sections: [...] }
+}
+
+// 증류 커버리지(진행 지표) — 화면에서 "정리 중" 표기 판단용
+export const kbCoverage = { distilledKeys: kb.meta?.distilledKeys ?? 0, indexKeys: Object.keys(kb.index || {}).length }
 
 export function todayIljin(year, month, day) {
   const c = computeChart({ year, month, day, hour: 12, minute: 0, gender: 'F' }, terms)

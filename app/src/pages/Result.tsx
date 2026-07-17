@@ -7,7 +7,8 @@ import TopControls from '../components/TopControls'
 import SajuTable from '../components/SajuTable'
 import DialogueBox from '../components/DialogueBox'
 import { tokens } from '../theme'
-import { mockPillars, mockOhaeng, mockReading } from '../data/saju'
+import { mockPillars, mockOhaeng, groundedReading, toReading } from '../data/saju'
+import type { ChartInput } from '../engine'
 
 const verdictColor = { 부족: '#B8B2AC', 적정: '#5AA06E', 발달: tokens.color.primary, 과다: tokens.color.solar }
 
@@ -28,9 +29,10 @@ function OhaengStrip({ ohaeng }: { ohaeng: typeof mockOhaeng }) {
 export default function Result() {
   // InfoInput에서 계산한 차트를 전달받고, 없으면 샘플로 폴백
   const loc = useLocation()
-  const state = loc.state as { chart?: { pillars: typeof mockPillars; ohaeng: typeof mockOhaeng } } | null
+  const state = loc.state as { chart?: { pillars: typeof mockPillars; ohaeng: typeof mockOhaeng }; input?: ChartInput } | null
   const pillars = state?.chart?.pillars ?? mockPillars
   const ohaeng = state?.chart?.ohaeng ?? mockOhaeng
+  const reading = state?.input ? toReading(state.input) : groundedReading
 
   return (
     <Screen>
@@ -51,10 +53,10 @@ export default function Result() {
         <DialogueBox speaker="아이샤">
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.7, mb: 1 }}>
             <span style={{ fontSize: 14 }}>🔍</span>
-            <span style={{ fontWeight: 700 }}>한 줄 요약:</span>
-            <span style={{ fontWeight: 800, color: tokens.color.primary }}>{mockReading.headline}</span>
+            <span style={{ fontWeight: 700 }}>일주:</span>
+            <span style={{ fontWeight: 800, color: tokens.color.primary }}>{reading.headline}</span>
           </Box>
-          {mockReading.sections.map((s) => (
+          {reading.sections.map((s) => (
             <Box key={s.label} sx={{ mb: 0.9 }}>
               <Typography component="div" sx={{ fontSize: 13.5, color: tokens.color.ink, lineHeight: 1.5 }}>
                 <b>
@@ -68,6 +70,9 @@ export default function Result() {
                   </span>
                 ))}
               </Typography>
+              {s.source && (
+                <Typography sx={{ fontSize: 10.5, color: tokens.color.inkFaint, mt: 0.3 }}>— 출처: {s.source}</Typography>
+              )}
             </Box>
           ))}
         </DialogueBox>

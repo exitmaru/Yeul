@@ -21,8 +21,8 @@ function excerpt(entry, kb, nParas = 4) {
   const body = kb.bodies[entry.key];
   if (!body) return null;
   const paras = body.paras.slice(0, nParas);
-  const more = body.paras.length > nParas;
-  return { source: { doc: entry.doc, title: entry.title }, paras, truncated: more, totalParas: body.paras.length };
+  const total = body.totalParas ?? body.paras.length; // 경량 번들(앞 N문단만)에서도 원문 문단수 유지
+  return { source: { doc: entry.doc, title: entry.title }, paras, truncated: total > paras.length, totalParas: total };
 }
 
 function topicBlock(key, kb, { maxUnits = 2, nParas = 4 } = {}) {

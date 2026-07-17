@@ -58,15 +58,18 @@ export default function InfoInput() {
     const [h, mi] = (timePart ?? '00:00').split(':').map((n) => parseInt(n, 10))
     const g = gender === '남자' ? 'M' : 'F'
     let chart = null
+    let input = null
     if (y && mo && da) {
       try {
-        chart = computeChartUI({ year: y, month: mo, day: da, hour: h || 0, minute: mi || 0, gender: g })
+        input = { year: y, month: mo, day: da, hour: h || 0, minute: mi || 0, gender: g as 'M' | 'F' }
+        chart = computeChartUI(input)
       } catch {
         chart = null // 절기표 범위(1900~2100) 밖 등 → 샘플 폴백
+        input = null
       }
     }
     const profile = { name, gender, calendar: cal, birth, city: mockProfile.city, marital }
-    nav('/loading', { state: chart ? { chart, profile } : undefined })
+    nav('/loading', { state: chart ? { chart, profile, input } : undefined })
   }
 
   return (

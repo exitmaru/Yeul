@@ -1,4 +1,4 @@
-import { computeChartUI, todayIljin as engineToday } from '../engine'
+import { computeChartUI, buildReading, todayIljin as engineToday, type ChartInput } from '../engine'
 
 /**
  * 화면 데이터 = dosa-app L1 만세력 엔진(computeChart)의 실제 계산 결과.
@@ -54,12 +54,42 @@ export const homeSummary = {
   ],
 }
 
-/** 결과 화면 대화(아이샤가 읽어주는 사주 풀이) — 추후 L3/L4 리포트로 대체 */
-export const mockReading = {
-  headline: '정리와 절제',
-  sections: [
-    { icon: '🧘', label: '태도 가이드', lines: ['하루 할 일을 3개로 줄이기', '길어진 관계와 약속을 잘라내기'] },
-    { icon: '🍀', label: '환경 설정', lines: ['흰색·은색 소품 곁에 두기', '수납이 쉬운 정리 도구 사용'] },
-    { icon: '⚠️', label: '주의 사항', lines: ['즉흥적으로 말하고 즉흥적으로 결정하는 상황을 피하세요.'] },
-  ],
+/** 결과 화면 풀이 — L3 근거 리포트(코퍼스 출처)에서 생성. 지어낸 문구 아님(절대 원칙 1). */
+export interface ReadingSection { icon: string; label: string; lines: string[]; source?: string }
+export interface Reading { headline: string; sections: ReadingSection[] }
+
+const srcOf = (unit: any): string | undefined => {
+  const s = unit?.sources?.[0]
+  return s ? `${s.doc} · ${s.title}` : undefined
 }
+
+/** 엔진 근거 리포트 → 화면 리딩 (근거 있는 섹션만; 없으면 비움 = 소장 문헌 없음) */
+export function toReading(input: ChartInput, unse = '병오'): Reading {
+  const rep: any = buildReading(input, unse)
+  const byId = (id: string) => rep.sections.find((s: any) => s.id === id)
+  const out: ReadingSection[] = []
+  let headline = '사주 풀이'
+
+  const judge = byId('judge')
+  if (judge?.lines?.length) out.push({ icon: '🧭', label: '원국 구조', lines: judge.lines })
+
+  const d = byId('ilju')?.block?.distilled
+  if (d) {
+    headline = d.title ?? headline
+    const seong: string[] = d.distilled?.성격?.slice(0, 3) ?? []
+    const lines = [d.distilled?.핵심, ...seong].filter(Boolean) as string[]
+    if (lines.length) out.push({ icon: '🎴', label: `${d.title} 특성`, lines, source: srcOf(d) })
+    const juui: string[] = d.distilled?.주의?.slice(0, 2) ?? []
+    if (juui.length) out.push({ icon: '⚠️', label: '주의할 점', lines: juui, source: srcOf(d) })
+  }
+
+  const unseSec = rep.sections.find((s: any) => s.id === 'unse' && s.block?.excerpts?.length)
+  if (unseSec) {
+    const ex = unseSec.block.excerpts[0]
+    out.push({ icon: '🍀', label: unseSec.title.replace('올해의 운 — ', '올해 · '), lines: ex.paras.slice(0, 3), source: `${ex.source.doc} · ${ex.source.title}` })
+  }
+  return { headline, sections: out }
+}
+
+// 샘플 프로필의 실제 근거 리딩 (state로 input이 안 오면 폴백)
+export const groundedReading: Reading = toReading({ year: 1990, month: 1, day: 1, hour: 8, minute: 24, gender: 'F' })

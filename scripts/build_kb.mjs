@@ -1,0 +1,41 @@
+// 앱용 KB 번들 생성 — 결정론 조회에 필요한 색인·별칭·증류본·(경량)본문을 하나로 묶는다.
+// 원본(dosa-app/kb)에서 생성하는 기계산출물 → app/src/engine/vendor/kb.json (손편집 금지).
+// unit_bodies.json은 13.5MB라 통째 번들 불가 → 유닛당 앞 BODY_PARAS문단만 실어 웹 경량화.
+//   npm run build:kb
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+const KB = join(root, 'dosa-app/kb')
+const OUT = join(root, 'app/src/engine/vendor/kb.json')
+const BODY_PARAS = 8 // 유닛당 실어보내는 문단 수(발췌 렌더용)
+
+const load = (p) => JSON.parse(readFileSync(p, 'utf-8'))
+const index = load(join(KB, 'unit_index.json'))
+const aliasesRaw = load(join(KB, 'aliases.json'))
+const aliases = Object.fromEntries(Object.entries(aliasesRaw).filter(([k]) => !k.startsWith('_')))
+
+if (!existsSync(join(KB, 'unit_bodies.json'))) {
+  console.error('unit_bodies.json 없음 — 먼저 `python3 dosa-app/kb-tools/extract_bodies.py`'); process.exit(1)
+}
+const fullBodies = load(join(KB, 'unit_bodies.json'))
+const bodies = {}
+for (const [k, b] of Object.entries(fullBodies)) {
+  bodies[k] = { title: b.title, paras: b.paras.slice(0, BODY_PARAS), totalParas: b.paras.length }
+}
+
+const distilled = {}
+const walk = (d) => {
+  for (const f of readdirSync(d)) {
+    const p = join(d, f)
+    if (statSync(p).isDirectory()) walk(p)
+    else if (f.endsWith('.json')) { const u = load(p); distilled[u.key] = u }
+  }
+}
+walk(join(KB, 'distilled'))
+
+const bundle = { index, aliases, distilled, bodies, meta: { bodyParas: BODY_PARAS, distilledKeys: Object.keys(distilled).length } }
+writeFileSync(OUT, JSON.stringify(bundle))
+const mb = (readFileSync(OUT).length / 1e6).toFixed(2)
+console.log(`KB 번들 생성: 색인 ${Object.keys(index).length}키 · 증류 ${Object.keys(distilled).length} · 본문 ${Object.keys(bodies).length}유닛(앞${BODY_PARAS}문단) → ${mb}MB`)
