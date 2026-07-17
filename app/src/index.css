@@ -1,0 +1,173 @@
+:root {
+  --pretendard: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', Roboto, 'Noto Sans KR', system-ui, sans-serif;
+  /* 전역 자간 기준 (자간 -10) */
+  --tracking: -0.03em;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* 색 토큰 — 라이트 */
+  --c-page: #eef0f6;
+  --c-card: #ffffff;
+  --c-ink: #1b1b1f;
+  --c-ink-sub: #5b6070;
+  --c-ink-faint: #9a9fb0;
+  --c-border: #e2e4ee;
+  --c-border-strong: #d3d6e2;
+  --c-primary: #22409e; /* 코발트+남색 딥 블루 */
+  --c-primary-dark: #17306f;
+  --c-primary-soft: #e7ebf8;
+  --c-on-primary: #ffffff;
+  --c-heading: #2a4bc0;
+  --c-solar: #e85e5e;
+  --c-lunar: #428bff;
+  --c-sky-top: #a9dced;
+  --c-sky-bot: #cfe8ef;
+
+  /* 강조색(YETA 이식 규칙: --accent만 브랜드색으로) */
+  --accent: #22409e;
+  --accent-rgb: 34, 64, 158;
+
+  /* 글래스모피즘 — YETA 이식(라이트는 15%, 강블러) */
+  --glass: rgba(255, 255, 255, 0.15);
+  --glass-line: rgba(255, 255, 255, 0.6);
+  --glass-inset: rgba(255, 255, 255, 0.75);
+  --blur-m: 26px;
+  --blur-l: 12px;
+  --shadow-card: 0 20px 50px rgba(28, 38, 78, 0.16);
+  --line: rgba(20, 24, 45, 0.06);
+  --line2: rgba(20, 24, 45, 0.04);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  /* 다크 — 니어블랙(YETA 톤) */
+  --c-page: #131315;
+  --c-card: #1f1f22;
+  --c-ink: #f1f1f4;
+  --c-ink-sub: #a0a0a8;
+  --c-ink-faint: #6a6a72;
+  --c-border: #2e2e33;
+  --c-border-strong: #3a3a41;
+  --c-primary: #3ad9c0; /* 틸·민트 */
+  --c-primary-dark: #2bb8a3;
+  --c-primary-soft: #133330;
+  --c-on-primary: #062019;
+  --c-heading: #6fe0c8;
+  --c-solar: #f07777;
+  --c-lunar: #5b9bff;
+  --c-sky-top: #1c2a33;
+  --c-sky-bot: #182027;
+
+  --accent: #3ad9c0;
+  --accent-rgb: 58, 217, 192;
+
+  /* 글래스 — YETA 확정값(초투명·강블러) */
+  --glass: rgba(255, 255, 255, 0.005);
+  --glass-line: rgba(255, 255, 255, 0.08);
+  --glass-inset: rgba(255, 255, 255, 0.08);
+  --blur-m: 29px;
+  --blur-l: 11px;
+  --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.42);
+  --line: rgba(255, 255, 255, 0.08);
+  --line2: rgba(255, 255, 255, 0.06);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--pretendard);
+  font-weight: 500; /* 기본 Medium */
+  letter-spacing: var(--tracking);
+  background: radial-gradient(1200px 800px at 50% -10%, #2a2c3a 0%, #16171f 60%, #0d0e14 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:root[data-theme='dark'] body {
+  background: radial-gradient(1200px 800px at 50% -10%, #101013 0%, #0a0a0c 70%);
+}
+
+#root {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 디바이스 셸 + 유리감이 살도록 은은한 메시 배경 */
+.device {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  height: 100dvh;
+  max-height: 844px;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 600px at 12% -5%, #e7eeff 0%, transparent 55%),
+    radial-gradient(820px 600px at 100% 8%, #ffe9ec 0%, transparent 52%),
+    radial-gradient(760px 760px at 50% 108%, #e2f7ef 0%, transparent 55%),
+    var(--c-page);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme='dark'] .device {
+  background:
+    radial-gradient(900px 600px at 12% -5%, #16323a 0%, transparent 55%),
+    radial-gradient(760px 600px at 100% 8%, #1a1730 0%, transparent 52%),
+    radial-gradient(760px 760px at 50% 108%, #0f231f 0%, transparent 55%),
+    var(--c-page);
+}
+
+@media (min-width: 430px) {
+  .device {
+    border-radius: 40px;
+    outline: 8px solid #0b0c11;
+  }
+}
+
+/* 유리 표면 — 강블러 카드(YETA) */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(var(--blur-m)) saturate(1.3);
+  -webkit-backdrop-filter: blur(var(--blur-m)) saturate(1.3);
+  box-shadow: inset 0 1px 0 var(--glass-inset), var(--shadow-card);
+}
+
+/* 유리 표면 — 약블러(네비·칩·모달) */
+.glass-soft {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(var(--blur-l)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--blur-l)) saturate(1.2);
+  box-shadow: inset 0 1px 0 var(--glass-inset), 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* 라이트/다크 토글은 PC 폭에서만 노출 */
+@media (max-width: 429px) {
+  .mode-toggle {
+    display: none !important;
+  }
+}
