@@ -1,12 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Box, Typography } from '@mui/material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Screen from '../components/Screen'
 import StatusBar from '../components/StatusBar'
 import OhaengTile from '../components/OhaengTile'
 import { tokens } from '../theme'
+import type { Pillar } from '../data/saju'
 
-const tiles = [
+const fallbackTiles = [
   { main: '경', hanja: '庚', polarity: '+' as const, element: '금' as const },
   { main: '병', hanja: '丙', polarity: '+' as const, element: '화' as const },
   { main: '계', hanja: '癸', polarity: '-' as const, element: '수' as const },
@@ -18,14 +19,21 @@ export default function Loading() {
   const loc = useLocation()
   useEffect(() => {
     // 스크린샷용: ?hold 파라미터가 있으면 자동 이동을 멈춘다
-    if (new URLSearchParams(window.location.search).has('hold')) return
-    const t = setTimeout(() => nav('/result', { state: loc.state }), 2400)
+    if (new URLSearchParams(loc.search).has('hold')) return
+    const t = setTimeout(() => nav(`/result${loc.search}`, { state: loc.state, replace: true }), 2400)
     return () => clearTimeout(t)
-  }, [nav, loc.state])
+  }, [nav, loc.search, loc.state])
+
+  // 내 원국 천간 4자가 있으면 그걸 띄운다(연출도 실데이터)
+  const tiles = useMemo(() => {
+    const chart = (loc.state as { chart?: { pillars: Pillar[] } } | null)?.chart
+    if (!chart?.pillars?.length) return fallbackTiles
+    return chart.pillars.map((p) => ({ main: p.ganK, hanja: p.gan, polarity: p.ganPolarity, element: p.ganE }))
+  }, [loc.state])
 
   return (
     <Screen>
-      <StatusBar time="9:00" />
+      <StatusBar />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 8 }}>
         <Box
           sx={{
