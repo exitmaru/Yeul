@@ -87,7 +87,7 @@ export function makeTheme(mode: Mode) {
             lineHeight: 1.2,
             letterSpacing: 'var(--tracking)',
             textTransform: 'none',
-            transition: 'transform .12s cubic-bezier(0.2,0.7,0.3,1), filter .2s',
+            transition: 'transform .12s var(--ease), filter .2s',
             '&:active': { transform: 'scale(0.985)' },
           },
           outlined: { borderWidth: 1.5, '&:hover': { borderWidth: 1.5 } },

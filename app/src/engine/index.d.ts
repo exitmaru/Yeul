@@ -13,6 +13,10 @@ export interface Pillar {
   jiPolarity: '+' | '-'
   botStar: string
   stage: string
+  /** 지장간(한글 천간, 여기→본기 순) */
+  hidden: string[]
+  /** 12신살(주별) */
+  sinsal: string
   isDayMaster?: boolean
 }
 
@@ -28,6 +32,8 @@ export interface DaeunItem {
   name: string
   stemTenGod: string
   twelveStage: string
+  jiE: OhaengKey
+  jiPolarity: '+' | '-'
 }
 
 export interface UiChart {

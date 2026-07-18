@@ -51,6 +51,8 @@ export default function SajuTable({ pillars, unknownHour = false }: { pillars: P
               <UnknownTile />
               <UnknownTile />
               {star('─')}
+              {star('─')}
+              <Typography sx={{ fontSize: 10.5, color: tokens.color.inkFaint, textAlign: 'center', fontWeight: 500 }}>─</Typography>
               <Typography sx={{ fontSize: 10.5, color: tokens.color.inkFaint, textAlign: 'center', fontWeight: 500 }}>─</Typography>
             </Box>
           ) : (
@@ -62,7 +64,9 @@ export default function SajuTable({ pillars, unknownHour = false }: { pillars: P
               <OhaengTile main={p.ganK} hanja={p.gan} polarity={p.ganPolarity} element={p.ganE} highlight={p.isDayMaster} />
               <OhaengTile main={p.jiK} hanja={p.ji} polarity={p.jiPolarity} element={p.jiE} />
               {star(p.botStar)}
+              {star(p.hidden.join(''))}
               <Typography sx={{ fontSize: 10.5, color: tokens.color.inkFaint, textAlign: 'center', fontWeight: 500 }}>{p.stage}</Typography>
+              <Typography sx={{ fontSize: 10.5, color: tokens.color.inkFaint, textAlign: 'center', fontWeight: 500 }}>{p.sinsal}</Typography>
             </Box>
           ),
         )}

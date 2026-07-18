@@ -17,25 +17,32 @@ const CHOOSE_INTRO = '궁금한 걸 골라 보게.'
 
 function useTypewriter(text: string, speedMs: number) {
   const [n, setN] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   useEffect(() => {
     setN(0)
     if (!text) return
     let i = 0
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       i += 1
       if (i >= text.length) {
         setN(text.length)
-        clearInterval(timer)
+        if (timerRef.current) clearInterval(timerRef.current)
       } else {
         setN(i)
       }
     }, speedMs)
-    return () => clearInterval(timer)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
   }, [text, speedMs])
   return {
     shown: text.slice(0, n),
     done: n >= text.length,
-    skip: () => setN(text.length),
+    // 스킵 = 타이머까지 사살 — 안 죽이면 다음 틱이 부분 텍스트로 되돌려 스킵이 무효(260718 실측 버그)
+    skip: () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      setN(text.length)
+    },
   }
 }
 
@@ -140,6 +147,25 @@ export default function DosaChat({
   return (
     <Box onClick={onTap} sx={{ cursor: 'pointer' }}>
       <DialogueBox speaker="아이샤" next={phase === 'play' && tw.done}>
+        {/* 진행 표지 + 주제 복귀 — play 중에만 (mini 9px 토큰 계승) */}
+        {phase === 'play' && (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1.2, mb: 0.4 }}>
+            <Box
+              component="span"
+              onClick={(e) => {
+                e.stopPropagation()
+                topicRef.current = null
+                setPhase('choose')
+              }}
+              sx={{ fontSize: 9, fontWeight: 700, color: tokens.color.inkFaint, cursor: 'pointer', py: 1, my: -1 }}
+            >
+              ‹ 주제로
+            </Box>
+            <Box component="span" sx={{ fontSize: 9, fontWeight: 700, color: tokens.color.inkFaint }}>
+              {idx + 1}/{seq.length}
+            </Box>
+          </Box>
+        )}
         {/* 본문 — 14.5px / 1.62 (플레이그라운드 .line 정본) */}
         <Box sx={{ fontSize: 14.5, lineHeight: 1.62, color: tokens.color.ink, whiteSpace: 'pre-line', minHeight: 66 }}>
           {tw.shown}
@@ -159,6 +185,9 @@ export default function DosaChat({
                 color: tokens.color.inkFaint,
                 fontWeight: 700,
                 listStyle: 'none',
+                minHeight: 24,
+                display: 'flex',
+                alignItems: 'center',
                 '&::-webkit-details-marker': { display: 'none' },
                 '&::before': { content: '"▸ "', color: tokens.color.accent },
               },
@@ -214,8 +243,8 @@ export default function DosaChat({
                   letterSpacing: 'var(--tracking)',
                   textAlign: 'left',
                   cursor: 'pointer',
-                  transition: 'border-color .15s, background .15s, transform .15s',
-                  '&:hover': { borderColor: 'var(--accent)' },
+                  transition: 'border-color .15s, background .15s, transform .12s var(--ease)',
+                  '&:hover': { borderColor: 'var(--accent)', bgcolor: 'color-mix(in srgb, var(--accent) 6%, var(--c-card))' },
                   '&:active': { transform: 'scale(0.98)' },
                 }}
               >
