@@ -78,6 +78,31 @@ const srcOf = (s: { doc?: string; title?: string } | undefined): string | undefi
 
 const exSrc = (ex: any): string | undefined => srcOf(ex?.source)
 
+/**
+ * 발췌 정제기(260718 실측 수선) — 원문 앞머리의 목차 헤딩("1. 병오년의 의미")·블로거 인사말·
+ * SEO 키워드 나열·도입 잡담을 걸러 실내용 문단만 남긴다. 원문 변형 없음(필터만 — 인용 축자 원칙 유지).
+ */
+const cleanParas = (ps: string[]): string[] =>
+  (ps ?? []).filter((s) => {
+    const t = s.trim()
+    if (!t) return false
+    if (/^\d+[.)]\s/.test(t) || /^[(（][가-힣][)）]/.test(t)) return false // 번호·(가) 헤딩
+    if (/^-\s*글의 차례\s*-/.test(t)) return false
+    if (/(안녕하세요|반갑습니다|포스팅을 했었|포스팅에서|다뤄보겠습니다|알아보겠습니다|풀어주는 남자|구독|공감과 댓글)/.test(t.slice(0, 60))) return false // 인사·도입 잡담
+    if (t.split(/[,ㅣ|·]/).length >= 4 && t.length < 70) return false // SEO 키워드 나열
+    return true
+  })
+
+/** 발췌 목록 중 정제 후 실내용이 남는 첫 발췌 채택(전무 = null → 블록 생략) */
+const pickExcerpt = (excerpts: any[] | undefined, n: number): { paras: string[]; src?: string; total?: number } | null => {
+  for (const ex of excerpts ?? []) {
+    if (/사주풀이\s*[ㅣ|]/.test(ex?.source?.title ?? '')) continue // 인물·사건 사주풀이류 = 내 리포트 근거로 부적합
+    const paras = cleanParas(ex?.paras)
+    if (paras.length) return { paras: paras.slice(0, n), src: exSrc(ex), total: ex.totalParas }
+  }
+  return null
+}
+
 /** 엔진 근거 리포트 → 화면 리딩. 근거 있는 섹션만(없으면 비움 = 소장 문헌 없음). */
 export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {}): Reading {
   const hourUnknown = !!opts.hourUnknown
@@ -85,13 +110,20 @@ export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {
   const byId = (id: string) => rep.sections.find((s: any) => s.id === id)
   const unseYear = currentUnseYearName()
 
-  // ① 대화(도사 한마디) — 핵심 요약
+  // ① 대화(도사 한마디) — VN 첫 화면용 압축(260718 실측: 4섹션 = 화면 76% 초과 → 2섹션 요약).
+  //    구조판정 전문은 카드로 이동. 배점 내부 수치는 사용자 문장에서 제거.
   const dialogue: ReadingSection[] = []
   let headline = '사주 풀이'
+  const judgeLines: string[] = (byId('judge')?.lines ?? []).map((l: string) =>
+    l.replace(/\*\*/g, '').replace(/\s*\([^)]*배점[^)]*\)/g, '').replace(/\s*—\s*방법론 보드[^·\n]*/g, ''),
+  )
 
-  const judge = byId('judge')
-  if (!hourUnknown && judge?.lines?.length)
-    dialogue.push({ icon: '🧭', label: '원국 구조', lines: judge.lines.map((l: string) => l.replace(/\*\*/g, '')) })
+  const d = byId('ilju')?.block?.distilled
+  if (d) {
+    headline = d.title ?? headline
+    const lines = [d.distilled?.핵심, d.distilled?.성격?.[0]].filter(Boolean) as string[]
+    if (lines.length) dialogue.push({ icon: '🎴', label: `${d.title} 특성`, lines, source: srcOf(d.sources?.[0]) })
+  }
   if (hourUnknown)
     dialogue.push({
       icon: '🕰️',
@@ -99,24 +131,15 @@ export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {
       lines: ['태어난 시간을 몰라 시주(時柱)를 뺀 세 기둥으로 본다. 일주 중심의 풀이는 그대로 정확하니 안심하게.'],
     })
 
-  const d = byId('ilju')?.block?.distilled
-  if (d) {
-    headline = d.title ?? headline
-    const seong: string[] = d.distilled?.성격?.slice(0, 3) ?? []
-    const lines = [d.distilled?.핵심, ...seong].filter(Boolean) as string[]
-    if (lines.length) dialogue.push({ icon: '🎴', label: `${d.title} 특성`, lines, source: srcOf(d.sources?.[0]) })
-    const juui: string[] = d.distilled?.주의?.slice(0, 2) ?? []
-    if (juui.length) dialogue.push({ icon: '⚠️', label: '주의할 점', lines: juui, source: srcOf(d.sources?.[0]) })
-  }
-
   const unseSec = rep.sections.find((s: any) => s.id === 'unse' && s.block?.excerpts?.length)
-  if (unseSec) {
-    const ex = unseSec.block.excerpts[0]
-    dialogue.push({ icon: '🍀', label: `올해 · ${unseYear}년`, lines: ex.paras.slice(0, 2), source: exSrc(ex) })
-  }
+  const unsePick = unseSec ? pickExcerpt(unseSec.block.excerpts, 6) : null
+  if (unsePick) dialogue.push({ icon: '🍀', label: `올해 · ${unseYear}년`, lines: unsePick.paras.slice(0, 1), source: unsePick.src })
 
-  // ② 카드(전체 리포트) — 순서 정본: 일주 → 십신 → 합충 → 신살 → 세운 (대운 레일은 차트 데이터로 별도 렌더)
+  // ② 카드(전체 리포트) — 순서: 구조 판정 → 일주 → 십신 → 합충 → 신살 → 세운 (대운 레일은 별도 렌더)
   const cards: ReadingCard[] = []
+
+  if (!hourUnknown && judgeLines.length)
+    cards.push({ id: 'judge', title: '원국 구조 판정', blocks: [{ lines: judgeLines, source: '엔진 판정(신강신약 보드·조후)' }] })
 
   if (d) {
     const blocks: CardBlock[] = []
@@ -140,12 +163,14 @@ export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {
     const sipsin = byId('sipsin')
     if (sipsin) {
       const chips = Object.entries(sipsin.distribution ?? {})
+        .filter(([, n]: any) => n > 0)
         .sort((a: any, b: any) => b[1] - a[1])
         .map(([k, n]) => `${k} ×${n}`)
       const blocks: CardBlock[] = (sipsin.blocks ?? [])
-        .filter((b: any) => b.excerpts?.length)
+        .map((b: any) => ({ label: b.label, pick: pickExcerpt(b.excerpts, 2) }))
+        .filter((b: any) => b.pick)
         .slice(0, 3)
-        .map((b: any) => ({ label: b.label, lines: b.excerpts[0].paras.slice(0, 2), source: exSrc(b.excerpts[0]) }))
+        .map((b: any) => ({ label: b.label, lines: b.pick.paras, source: b.pick.src }))
       if (chips.length || blocks.length) cards.push({ id: 'sipsin', title: '십신 구성', chips, blocks })
     }
 
@@ -153,26 +178,30 @@ export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {
     if (hap) {
       const blocks: CardBlock[] = []
       if (hap.lines?.length) blocks.push({ label: '내 원국의 합충', lines: hap.lines })
-      for (const b of (hap.blocks ?? []).filter((b: any) => b.excerpts?.length).slice(0, 2))
-        blocks.push({ label: b.label, lines: b.excerpts[0].paras.slice(0, 2), source: exSrc(b.excerpts[0]) })
+      for (const b of hap.blocks ?? []) {
+        const pick = pickExcerpt(b.excerpts, 2)
+        if (pick) blocks.push({ label: b.label, lines: pick.paras, source: pick.src })
+        if (blocks.length >= 3) break
+      }
       if (blocks.length) cards.push({ id: 'hapchung', title: '합충 관계', blocks })
     }
 
     const sinsal = byId('sinsal')
     if (sinsal?.blocks?.length) {
-      const withEx = sinsal.blocks.filter((b: any) => b.excerpts?.length)
-      const blocks: CardBlock[] = withEx.slice(0, 5).map((b: any) => ({
-        label: b.label,
-        lines: b.excerpts[0].paras.slice(0, 1),
-        source: exSrc(b.excerpts[0]),
-      }))
-      const rest = sinsal.blocks.length - Math.min(withEx.length, 5)
+      const picked: CardBlock[] = []
+      for (const b of sinsal.blocks) {
+        const pick = pickExcerpt(b.excerpts, 1)
+        if (pick) picked.push({ label: b.label, lines: pick.paras, source: pick.src })
+        if (picked.length >= 5) break
+      }
+      const shown = new Set(picked.map((b) => b.label))
+      const restChips = sinsal.blocks.map((b: any) => b.label).filter((l: string) => !shown.has(l))
       cards.push({
         id: 'sinsal',
         title: '신살',
-        chips: sinsal.blocks.map((b: any) => b.label),
-        blocks,
-        note: rest > 0 ? `외 ${rest}개 신살은 도사에게 물어보면 더 들을 수 있다.` : undefined,
+        chips: restChips,
+        blocks: picked,
+        note: restChips.length > 0 ? '이야기의 앞머리만 — 나머지는 도사에게 물어보게.' : undefined,
       })
     }
   } else {
@@ -190,13 +219,12 @@ export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {
     })
   }
 
-  if (unseSec) {
-    const ex = unseSec.block.excerpts[0]
+  if (unsePick) {
     cards.push({
       id: 'unse',
       title: `올해의 운 — ${unseYear}년`,
-      blocks: [{ lines: ex.paras.slice(0, 6), source: exSrc(ex) }],
-      note: ex.totalParas > 6 ? `전체 ${ex.totalParas}문단 중 일부 — 나머지는 도사와의 대화에서.` : undefined,
+      blocks: [{ lines: unsePick.paras, source: unsePick.src }],
+      note: (unsePick.total ?? 0) > unsePick.paras.length ? '이야기의 앞머리만 — 나머지는 도사에게 물어보게.' : undefined,
     })
   }
 

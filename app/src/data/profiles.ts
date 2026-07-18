@@ -141,6 +141,7 @@ export function parseShare(search: string): ParsedShare | null {
     if (!Number.isInteger(y) || y < 1900 || y > 2100) return null
     if (!Number.isInteger(mo) || mo < 1 || mo > 12) return null
     if (!Number.isInteger(d) || d < 1 || d > 31) return null
+    if (new Date(Date.UTC(y, mo - 1, d)).getUTCDate() !== d) return null // 2/31 등 실존하지 않는 날짜 차단
     if (g !== 'M' && g !== 'F') return null
     if (!hourUnknown && (!Number.isInteger(hh) || hh < 0 || hh > 23 || !Number.isInteger(mi) || mi < 0 || mi > 59)) return null
     const city = q.get('city') ?? '서울'
