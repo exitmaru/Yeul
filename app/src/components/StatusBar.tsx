@@ -1,7 +1,9 @@
 import { Box } from '@mui/material'
 
-/** iOS 스타일 가짜 상태바 (모바일 프레임 상단) */
-export default function StatusBar({ dark = false, time = '8:58' }: { dark?: boolean; time?: string }) {
+/** iOS 스타일 가짜 상태바 (모바일 프레임 상단). time 미지정 = 실제 현재 시각 */
+export default function StatusBar({ dark = false, time }: { dark?: boolean; time?: string }) {
+  const now = new Date()
+  const clock = time ?? `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
   const c = dark ? '#fff' : '#1B1B1F'
   return (
     <Box
@@ -20,7 +22,7 @@ export default function StatusBar({ dark = false, time = '8:58' }: { dark?: bool
         zIndex: 5,
       }}
     >
-      <span>{time}</span>
+      <span>{clock}</span>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.7 }}>
         {/* signal */}
         <svg width="18" height="12" viewBox="0 0 18 12" fill={c} aria-hidden>

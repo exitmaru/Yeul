@@ -7,8 +7,21 @@
 - 오탐 선방: 코드펜스 제거·브랜치(origin/…)·도메인·Windows 백슬래시 표기 스킵 (FP)
 - 마커 앵커: 골격 [N] 번호 드리프트를 키워드로 검출 — 바인딩의 [N] 참조가 헛도는 사고 방지 (F-1)
 """
-import re, sys, pathlib
+import re, subprocess, sys, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def is_generated(p):
+    """gitignore에 선언된 경로 = 빌드 생성물(dist/ 등). fresh 클론엔 아직 없어도 정상 —
+    실존 검사 면제 (verify 1게이트가 5게이트 빌드보다 먼저 돌아 첫 실행이 무조건 깨지던 순서 버그 수선).
+    미실존 경로는 git이 디렉터리 여부를 모르므로 후행 슬래시 형태('dist/')도 같이 묻는다
+    (-q는 경로 1개 한정이라 미사용 — 여럿 중 하나라도 매칭이면 rc 0)."""
+    p = p.rstrip("/")
+    try:
+        return subprocess.run(["git", "check-ignore", p, p + "/"], cwd=ROOT,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    except OSError:
+        return False
 
 # 골격 [N] 줄에 반드시 있어야 할 키워드 — 전파로 번호가 밀리면 여기서 울린다
 MARKER_ANCHORS = {'[4]': '디자인', '[5]': '플레이그라운드', '[6]': '보고', '[9]': '병렬', '[11]': '미리보기'}  # [6] '한 수'→'보고': 260717 #51 개정(6단 골격) 동조
@@ -52,7 +65,7 @@ def main():
                 continue  # 브랜치·도메인
             if not re.fullmatch(r"[\w./가-힣_-]+", p):
                 continue  # 경로 문자 집합 밖(산문·수식) — 검사 불가 표기
-            if not (ROOT / p.rstrip("/")).exists():
+            if not (ROOT / p.rstrip("/")).exists() and not is_generated(p.rstrip("/")):
                 bad.append(p)
 
     if errs or bad:

@@ -5,8 +5,9 @@ import { useNavigate } from 'react-router-dom'
 import Screen from '../components/Screen'
 import StatusBar from '../components/StatusBar'
 import { tokens } from '../theme'
-import { mockProfile } from '../data/saju'
 import { computeChartUI } from '../engine'
+import { CITIES } from '../data/cities'
+import { listProfiles, saveProfile, setActiveProfile, profileToInput, profileToSearch, type StoredProfile } from '../data/profiles'
 
 function Label({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
   return (
@@ -18,10 +19,13 @@ function Label({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
 }
 
 const selectSx = { bgcolor: 'var(--c-card)', borderRadius: '12px', fontSize: 15, '& fieldset': { borderColor: tokens.color.border } }
+const numSx = { borderRadius: '12px', bgcolor: 'var(--c-card)', '& input': { textAlign: 'center' } }
 
-function CorrectionChip({ text, on }: { text: string; on: boolean }) {
+/** 켬/끔 칩(정본 부품: ON/OFF=토글) — 눌러서 전환 */
+function CorrectionChip({ text, on, onClick, disabled }: { text: string; on: boolean; onClick?: () => void; disabled?: boolean }) {
   return (
     <Box
+      onClick={disabled ? undefined : onClick}
       sx={{
         flex: 1,
         display: 'flex',
@@ -36,6 +40,10 @@ function CorrectionChip({ text, on }: { text: string; on: boolean }) {
         fontSize: 12.5,
         fontWeight: 700,
         whiteSpace: 'nowrap',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'transform .12s var(--ease)',
+        '&:active': disabled ? {} : { transform: 'scale(0.97)' },
       }}
     >
       {on ? '✓' : ''} {text}
@@ -43,66 +51,184 @@ function CorrectionChip({ text, on }: { text: string; on: boolean }) {
   )
 }
 
+const num = (s: string) => (/^\d+$/.test(s.trim()) ? parseInt(s.trim(), 10) : NaN)
+
 export default function InfoInput() {
   const nav = useNavigate()
-  const [gender, setGender] = useState(mockProfile.gender)
-  const [cal, setCal] = useState(mockProfile.calendar)
-  const [marital, setMarital] = useState(mockProfile.marital)
-  const [name, setName] = useState(mockProfile.name)
-  const [birth, setBirth] = useState(mockProfile.birth)
+  const saved = listProfiles()
+  const [loadedId, setLoadedId] = useState<string | null>(null)
+
+  const [name, setName] = useState('')
+  const [gender, setGender] = useState<'여자' | '남자'>('여자')
+  const [cal, setCal] = useState<'양력' | '음력' | '음력(윤달)'>('양력')
+  const [y, setY] = useState('')
+  const [mo, setMo] = useState('')
+  const [d, setD] = useState('')
+  const [hh, setHh] = useState('')
+  const [mi, setMi] = useState('')
+  const [hourUnknown, setHourUnknown] = useState(false)
+  const [city, setCity] = useState('서울')
+  const [marital, setMarital] = useState<'미혼' | '기혼'>('미혼')
+  const [solarCorr, setSolarCorr] = useState(true)
+  const [lateZi, setLateZi] = useState(false)
+  const [error, setError] = useState('')
+
+  const loadProfile = (p: StoredProfile) => {
+    setLoadedId(p.id)
+    setName(p.name)
+    setGender(p.gender)
+    setCal('양력')
+    setY(String(p.year))
+    setMo(String(p.month))
+    setD(String(p.day))
+    setHh(p.hourUnknown ? '' : String(p.hour).padStart(2, '0'))
+    setMi(p.hourUnknown ? '' : String(p.minute).padStart(2, '0'))
+    setHourUnknown(p.hourUnknown)
+    setCity(p.city)
+    setMarital(p.marital)
+    setSolarCorr(p.solarCorrection !== false)
+    setLateZi(!!p.lateZi)
+    setError('')
+  }
 
   const onSubmit = () => {
-    // "YYYY/MM/DD HH:MM" 파싱 → 엔진 실계산 → 결과로 전달
-    const [datePart, timePart] = birth.trim().split(/\s+/)
-    const [y, mo, da] = (datePart ?? '').split('/').map((n) => parseInt(n, 10))
-    const [h, mi] = (timePart ?? '00:00').split(':').map((n) => parseInt(n, 10))
-    const g = gender === '남자' ? 'M' : 'F'
-    let chart = null
-    let input = null
-    if (y && mo && da) {
-      try {
-        input = { year: y, month: mo, day: da, hour: h || 0, minute: mi || 0, gender: g as 'M' | 'F' }
-        chart = computeChartUI(input)
-      } catch {
-        chart = null // 절기표 범위(1900~2100) 밖 등 → 샘플 폴백
-        input = null
-      }
+    const year = num(y)
+    const month = num(mo)
+    const day = num(d)
+    const hour = hourUnknown ? 12 : num(hh)
+    const minute = hourUnknown ? 0 : mi.trim() === '' ? 0 : num(mi)
+
+    if (!name.trim()) return setError('이름(별명도 좋아요)을 입력해 주세요.')
+    if (!Number.isInteger(year) || year < 1900 || year > 2100) return setError('출생 연도는 1900~2100년만 지원해요.')
+    if (!Number.isInteger(month) || month < 1 || month > 12) return setError('월은 1~12 사이로 입력해 주세요.')
+    const dt = new Date(Date.UTC(year, month - 1, day))
+    if (!Number.isInteger(day) || day < 1 || dt.getUTCMonth() !== month - 1 || dt.getUTCDate() !== day)
+      return setError('실제로 있는 날짜인지 확인해 주세요.')
+    if (!hourUnknown) {
+      if (!Number.isInteger(hour) || hour < 0 || hour > 23) return setError('시각은 0~23시로 입력해 주세요. 모르면 「시간 모름」을 켜세요.')
+      if (!Number.isInteger(minute) || minute < 0 || minute > 59) return setError('분은 0~59로 입력해 주세요.')
     }
-    const profile = { name, gender, calendar: cal, birth, city: mockProfile.city, marital }
-    nav('/loading', { state: chart ? { chart, profile, input } : undefined })
+
+    const profile = saveProfile({
+      name: name.trim(),
+      gender,
+      calendar: '양력',
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      hourUnknown,
+      city,
+      marital,
+      solarCorrection: solarCorr,
+      lateZi,
+    })
+    setActiveProfile(profile.id)
+
+    try {
+      const input = profileToInput(profile)
+      const chart = computeChartUI(input)
+      nav(`/loading?${profileToSearch(profile)}`, { state: { chart, input, profile } })
+    } catch {
+      setError('만세력 계산 범위를 벗어났어요. 날짜를 다시 확인해 주세요.')
+    }
   }
 
   return (
     <Screen>
-      <StatusBar time="8:58" />
+      <StatusBar />
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2.5, pb: 2 }}>
         <Typography sx={{ fontSize: 25, fontWeight: 800, letterSpacing: 'var(--tracking)', mt: 1, mb: 0.5 }}>
           정보를 입력해 주세요.
         </Typography>
 
+        {saved.length > 0 && (
+          <>
+            {/* ⚠신규: 저장된 프로필 불러오기 칩 행(가로 스크롤) — 재방문 재입력 제거 */}
+            <Label>저장된 사주</Label>
+            <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 0.5 }}>
+              {saved.map((p) => (
+                <Box
+                  key={p.id}
+                  onClick={() => loadProfile(p)}
+                  sx={{
+                    flex: '0 0 auto',
+                    px: 1.6,
+                    py: 0.9,
+                    borderRadius: 100,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    bgcolor: loadedId === p.id ? tokens.color.primarySoft : 'var(--c-card)',
+                    border: `1px solid ${loadedId === p.id ? tokens.color.primary : tokens.color.border}`,
+                    color: loadedId === p.id ? tokens.color.primary : tokens.color.inkSub,
+                    transition: 'transform .12s var(--ease)',
+                    '&:active': { transform: 'scale(0.97)' },
+                  }}
+                >
+                  {p.name} · {String(p.year).slice(2)}년생
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
+
         <Label>이름과 성별</Label>
         <Stack direction="row" spacing={1}>
-          <OutlinedInput fullWidth value={name} onChange={(e) => setName(e.target.value)} sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)' }} />
+          <OutlinedInput
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="별명도 좋아요"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)' }}
+          />
           <Select value={gender} onChange={(e) => setGender(e.target.value as typeof gender)} sx={{ ...selectSx, width: 104 }}>
             <MenuItem value="여자">여자</MenuItem>
             <MenuItem value="남자">남자</MenuItem>
           </Select>
         </Stack>
 
-        <Label hint={<Typography sx={{ fontSize: 12.5, color: tokens.color.inkFaint, fontWeight: 600 }}>◻ 시간 모름</Typography>}>
-          생년월일시
-        </Label>
+        <Label>생년월일</Label>
         <Stack direction="row" spacing={1}>
           <Select value={cal} onChange={(e) => setCal(e.target.value as typeof cal)} sx={{ ...selectSx, width: 118 }}>
             <MenuItem value="양력">양력</MenuItem>
-            <MenuItem value="음력">음력</MenuItem>
-            <MenuItem value="음력(윤달)">음력(윤달)</MenuItem>
+            <MenuItem value="음력" disabled>음력 (준비 중)</MenuItem>
+            <MenuItem value="음력(윤달)" disabled>음력(윤달) (준비 중)</MenuItem>
           </Select>
-          <OutlinedInput fullWidth value={birth} onChange={(e) => setBirth(e.target.value)} placeholder="1990/01/01 08:24" sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)', color: tokens.color.ink }} />
+          <OutlinedInput value={y} onChange={(e) => setY(e.target.value)} placeholder="1990" inputMode="numeric" sx={{ ...numSx, flex: 1.3 }} />
+          <OutlinedInput value={mo} onChange={(e) => setMo(e.target.value)} placeholder="01" inputMode="numeric" sx={{ ...numSx, flex: 1 }} />
+          <OutlinedInput value={d} onChange={(e) => setD(e.target.value)} placeholder="01" inputMode="numeric" sx={{ ...numSx, flex: 1 }} />
+        </Stack>
+
+        <Label
+          hint={
+            <Typography
+              onClick={() => setHourUnknown((v) => !v)}
+              sx={{ fontSize: 12.5, color: hourUnknown ? tokens.color.primary : tokens.color.inkFaint, fontWeight: 700, cursor: 'pointer', userSelect: 'none' }}
+            >
+              {hourUnknown ? '☑' : '◻'} 시간 모름
+            </Typography>
+          }
+        >
+          태어난 시간
+        </Label>
+        <Stack direction="row" spacing={1} sx={{ opacity: hourUnknown ? 0.45 : 1 }}>
+          <OutlinedInput value={hh} onChange={(e) => setHh(e.target.value)} placeholder="08" inputMode="numeric" disabled={hourUnknown} sx={{ ...numSx, flex: 1 }} />
+          <Box sx={{ alignSelf: 'center', fontWeight: 800, color: tokens.color.inkFaint }}>:</Box>
+          <OutlinedInput value={mi} onChange={(e) => setMi(e.target.value)} placeholder="24" inputMode="numeric" disabled={hourUnknown} sx={{ ...numSx, flex: 1 }} />
         </Stack>
 
         <Label>태어난 도시</Label>
-        <OutlinedInput fullWidth value={mockProfile.city} readOnly startAdornment={<span style={{ marginRight: 8, opacity: 0.5 }}>🔍</span>} sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)' }} />
+        <Select fullWidth value={city} onChange={(e) => setCity(e.target.value)} sx={selectSx} MenuProps={{ slotProps: { paper: { sx: { maxHeight: 300 } } } }}>
+          {CITIES.map((c) => (
+            <MenuItem key={c.name} value={c.name}>{c.name}</MenuItem>
+          ))}
+        </Select>
 
         <Label>혼인 여부</Label>
         <Select value={marital} onChange={(e) => setMarital(e.target.value as typeof marital)} sx={{ ...selectSx, width: 148 }}>
@@ -110,17 +236,21 @@ export default function InfoInput() {
           <MenuItem value="기혼">기혼</MenuItem>
         </Select>
 
-        <Label hint={<Typography sx={{ fontSize: 13, color: tokens.color.inkFaint }}>❔</Typography>}>보정값 적용</Label>
+        <Label>보정값 적용</Label>
         <Stack direction="row" spacing={1}>
-          <CorrectionChip text="조후와 궁성 보정" on />
-          <CorrectionChip text="합에 따른 오행 변화" on />
+          <CorrectionChip text="진태양시 보정" on={solarCorr} onClick={() => setSolarCorr((v) => !v)} />
+          <CorrectionChip text="야자시 적용" on={lateZi} onClick={() => setLateZi((v) => !v)} disabled={hourUnknown} />
         </Stack>
+        <Typography sx={{ fontSize: 11.5, color: tokens.color.inkFaint, mt: 0.8, lineHeight: 1.5 }}>
+          진태양시 = 출생지 경도로 시간을 바로잡는 보정 · 야자시 = 밤 11시대를 당일로 볼지의 유파 선택
+        </Typography>
+
+        {error && (
+          <Typography sx={{ fontSize: 13, color: tokens.color.solar, fontWeight: 700, mt: 2 }}>{error}</Typography>
+        )}
       </Box>
 
       <Box sx={{ px: 2.5, pb: 2.5, pt: 1 }}>
-        <Typography sx={{ textAlign: 'center', fontSize: 13, color: tokens.color.inkFaint, mb: 1.2, fontWeight: 600 }}>
-          ↻ 다른 사람 정보 입력하기
-        </Typography>
         <Button fullWidth variant="contained" onClick={onSubmit}>
           사주 풀이하기
         </Button>

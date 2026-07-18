@@ -1,9 +1,21 @@
-import { computeChartUI, buildReading, todayIljin as engineToday, type ChartInput } from '../engine'
+import {
+  computeChartUI,
+  buildReading,
+  todayIljin as engineToday,
+  todayKST,
+  todayFortune,
+  currentUnseYearName,
+  type ChartInput,
+  type TodayFortune,
+  type UiChart,
+  type Pillar as PillarT,
+  type OhaengStat as OhaengStatT,
+} from '../engine'
 
 /**
- * 화면 데이터 = dosa-app L1 만세력 엔진(computeChart)의 실제 계산 결과.
- * 지금은 샘플 프로필(1990/01/01 08:24 여, 서울)로 고정 호출.
- * 추후 InfoInput 폼 값으로 computeChartUI(input)를 그대로 호출하면 된다.
+ * 화면 데이터층 — 전부 dosa-app L1 엔진 실계산 + L3 근거 리포트에서 생성.
+ * 고정 목업 금지: 날짜는 오늘(KST) 실값, 사주는 저장 프로필 또는 URL 파라미터.
+ * 샘플은 저장 프로필이 없을 때의 데모 전용 — 화면에 반드시 '샘플' 라벨과 함께만 노출한다.
  */
 export type { Pillar, OhaengStat, Verdict, DaeunItem } from '../engine'
 
@@ -16,85 +28,204 @@ export interface Profile {
   marital: '미혼' | '기혼'
 }
 
-export const mockProfile: Profile = {
-  name: 'uibowl',
-  gender: '여자',
-  calendar: '양력',
-  birth: '1990/01/01 08:24',
-  city: '충청남도 공주, 대한민국',
-  marital: '미혼',
+// ── 샘플(데모 전용) ──
+export const SAMPLE_INPUT: ChartInput = { year: 1990, month: 1, day: 1, hour: 8, minute: 24, gender: 'F' }
+export const sampleProfileLabel = '샘플 · 1990년 1월 1일 08:24 여성'
+
+let _sampleChart: UiChart | null = null
+export function sampleChart(): UiChart {
+  if (!_sampleChart) _sampleChart = computeChartUI(SAMPLE_INPUT)
+  return _sampleChart
 }
 
-// 실제 엔진 계산 (기사·병자·병인·임진 / 일간 병火 / 대운수 2)
-const chart = computeChartUI({ year: 1990, month: 1, day: 1, hour: 8, minute: 24, gender: 'F' })
-export const mockPillars = chart.pillars
-export const mockOhaeng = chart.ohaeng
-export const mockDaeun = chart.daeun
-export const dayMaster = chart.dayMaster
-
-// 오늘의 일진 (엔진 산출) + 점수/문안은 서비스 정책값(placeholder)
-const t = engineToday(2026, 7, 16)
-export const todayIljin = {
-  date: '7월 16일 목요일',
-  yearName: t.yearName,
-  monthName: t.monthName,
-  dayName: t.dayName,
-  dayHanja: t.dayHanja,
-  score: 82,
-  keyword: '차분한 정리의 날',
-  oneLine: '들뜨기보다 하나를 매듭짓기 좋은 흐름이에요.',
+// ── 오늘(KST 실날짜) ──
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+export function todayInfo() {
+  const t = todayKST()
+  const names = engineToday(t.year, t.month, t.day)
+  const dow = WEEKDAYS[new Date(`${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}T12:00:00+09:00`).getUTCDay()]
+  return {
+    ...t,
+    ...names,
+    dateLabel: `${t.month}월 ${t.day}일 ${dow}요일`,
+    monthShort: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'][t.month - 1],
+  }
 }
 
-/** 홈 간단 개요 — L3 조립기가 코퍼스 근거로 채울 자리(현재 요약 문안) */
-export const homeSummary = {
-  title: '병화(丙火) 일간, 태양처럼 뻗는 기운',
-  lines: [
-    '화(火)가 왕성하고 금(金)이 비어, 표현·추진력은 강하나 수렴과 마무리가 과제.',
-    '올해 병오년은 비견 운 — 자기 주도와 경쟁이 함께 커지는 해.',
-  ],
+/** 오늘의 운세(내 원국 기준) — 엔진 diaryDayInfo 기반. 프로필 없으면 null. */
+export function myTodayFortune(input: ChartInput | null): TodayFortune | null {
+  if (!input) return null
+  try {
+    return todayFortune(input)
+  } catch {
+    return null
+  }
 }
 
-/** 결과 화면 풀이 — L3 근거 리포트(코퍼스 출처)에서 생성. 지어낸 문구 아님(절대 원칙 1). */
+// ── L3 근거 리딩 (전 섹션) ──
 export interface ReadingSection { icon: string; label: string; lines: string[]; source?: string }
-export interface Reading { headline: string; sections: ReadingSection[] }
-
-const srcOf = (unit: any): string | undefined => {
-  const s = unit?.sources?.[0]
-  return s ? `${s.doc} · ${s.title}` : undefined
+export interface CardBlock { label?: string; lines: string[]; source?: string }
+export interface ReadingCard { id: string; title: string; chips?: string[]; blocks: CardBlock[]; note?: string }
+export interface Reading {
+  headline: string
+  unseYear: string
+  dialogue: ReadingSection[]
+  cards: ReadingCard[]
 }
 
-/** 엔진 근거 리포트 → 화면 리딩 (근거 있는 섹션만; 없으면 비움 = 소장 문헌 없음) */
-export function toReading(input: ChartInput, unse = '병오'): Reading {
-  const rep: any = buildReading(input, unse)
+const srcOf = (s: { doc?: string; title?: string } | undefined): string | undefined =>
+  s?.doc ? `${s.doc}${s.title ? ` · ${s.title}` : ''}` : undefined
+
+const exSrc = (ex: any): string | undefined => srcOf(ex?.source)
+
+/** 엔진 근거 리포트 → 화면 리딩. 근거 있는 섹션만(없으면 비움 = 소장 문헌 없음). */
+export function toReading(input: ChartInput, opts: { hourUnknown?: boolean } = {}): Reading {
+  const hourUnknown = !!opts.hourUnknown
+  const rep: any = buildReading(input)
   const byId = (id: string) => rep.sections.find((s: any) => s.id === id)
-  const out: ReadingSection[] = []
+  const unseYear = currentUnseYearName()
+
+  // ① 대화(도사 한마디) — 핵심 요약
+  const dialogue: ReadingSection[] = []
   let headline = '사주 풀이'
 
   const judge = byId('judge')
-  if (judge?.lines?.length) out.push({ icon: '🧭', label: '원국 구조', lines: judge.lines })
+  if (!hourUnknown && judge?.lines?.length)
+    dialogue.push({ icon: '🧭', label: '원국 구조', lines: judge.lines.map((l: string) => l.replace(/\*\*/g, '')) })
+  if (hourUnknown)
+    dialogue.push({
+      icon: '🕰️',
+      label: '시간 모름',
+      lines: ['태어난 시간을 몰라 시주(時柱)를 뺀 세 기둥으로 본다. 일주 중심의 풀이는 그대로 정확하니 안심하게.'],
+    })
 
   const d = byId('ilju')?.block?.distilled
   if (d) {
     headline = d.title ?? headline
     const seong: string[] = d.distilled?.성격?.slice(0, 3) ?? []
     const lines = [d.distilled?.핵심, ...seong].filter(Boolean) as string[]
-    if (lines.length) out.push({ icon: '🎴', label: `${d.title} 특성`, lines, source: srcOf(d) })
+    if (lines.length) dialogue.push({ icon: '🎴', label: `${d.title} 특성`, lines, source: srcOf(d.sources?.[0]) })
     const juui: string[] = d.distilled?.주의?.slice(0, 2) ?? []
-    if (juui.length) out.push({ icon: '⚠️', label: '주의할 점', lines: juui, source: srcOf(d) })
+    if (juui.length) dialogue.push({ icon: '⚠️', label: '주의할 점', lines: juui, source: srcOf(d.sources?.[0]) })
   }
 
   const unseSec = rep.sections.find((s: any) => s.id === 'unse' && s.block?.excerpts?.length)
   if (unseSec) {
     const ex = unseSec.block.excerpts[0]
-    out.push({ icon: '🍀', label: unseSec.title.replace('올해의 운 — ', '올해 · '), lines: ex.paras.slice(0, 3), source: `${ex.source.doc} · ${ex.source.title}` })
+    dialogue.push({ icon: '🍀', label: `올해 · ${unseYear}년`, lines: ex.paras.slice(0, 2), source: exSrc(ex) })
   }
-  return { headline, sections: out }
+
+  // ② 카드(전체 리포트) — 순서 정본: 일주 → 십신 → 합충 → 신살 → 세운 (대운 레일은 차트 데이터로 별도 렌더)
+  const cards: ReadingCard[] = []
+
+  if (d) {
+    const blocks: CardBlock[] = []
+    if (d.distilled?.핵심) blocks.push({ label: '핵심', lines: [d.distilled.핵심] })
+    if (d.distilled?.성격?.length) blocks.push({ label: '성격', lines: d.distilled.성격 })
+    if (d.distilled?.직업?.length) blocks.push({ label: '일과 재능', lines: d.distilled.직업 })
+    if (d.distilled?.관계?.length) blocks.push({ label: '관계', lines: d.distilled.관계 })
+    if (d.distilled?.주의?.length) blocks.push({ label: '주의', lines: d.distilled.주의 })
+    if (d.distilled?.물상) blocks.push({ label: '물상', lines: [d.distilled.물상] })
+    for (const v of d.관점차이 ?? []) {
+      const lines = (v.견해 ?? []).map((g: any) => `${g.src}: ${g.내용}`)
+      if (lines.length) blocks.push({ label: `관점 차이 — ${v.주제}`, lines })
+    }
+    if (blocks.length) {
+      blocks[blocks.length - 1].source = srcOf(d.sources?.[0])
+      cards.push({ id: 'ilju', title: `일주 이야기 — ${d.title ?? ''}`, blocks })
+    }
+  }
+
+  if (!hourUnknown) {
+    const sipsin = byId('sipsin')
+    if (sipsin) {
+      const chips = Object.entries(sipsin.distribution ?? {})
+        .sort((a: any, b: any) => b[1] - a[1])
+        .map(([k, n]) => `${k} ×${n}`)
+      const blocks: CardBlock[] = (sipsin.blocks ?? [])
+        .filter((b: any) => b.excerpts?.length)
+        .slice(0, 3)
+        .map((b: any) => ({ label: b.label, lines: b.excerpts[0].paras.slice(0, 2), source: exSrc(b.excerpts[0]) }))
+      if (chips.length || blocks.length) cards.push({ id: 'sipsin', title: '십신 구성', chips, blocks })
+    }
+
+    const hap = byId('hapchung')
+    if (hap) {
+      const blocks: CardBlock[] = []
+      if (hap.lines?.length) blocks.push({ label: '내 원국의 합충', lines: hap.lines })
+      for (const b of (hap.blocks ?? []).filter((b: any) => b.excerpts?.length).slice(0, 2))
+        blocks.push({ label: b.label, lines: b.excerpts[0].paras.slice(0, 2), source: exSrc(b.excerpts[0]) })
+      if (blocks.length) cards.push({ id: 'hapchung', title: '합충 관계', blocks })
+    }
+
+    const sinsal = byId('sinsal')
+    if (sinsal?.blocks?.length) {
+      const withEx = sinsal.blocks.filter((b: any) => b.excerpts?.length)
+      const blocks: CardBlock[] = withEx.slice(0, 5).map((b: any) => ({
+        label: b.label,
+        lines: b.excerpts[0].paras.slice(0, 1),
+        source: exSrc(b.excerpts[0]),
+      }))
+      const rest = sinsal.blocks.length - Math.min(withEx.length, 5)
+      cards.push({
+        id: 'sinsal',
+        title: '신살',
+        chips: sinsal.blocks.map((b: any) => b.label),
+        blocks,
+        note: rest > 0 ? `외 ${rest}개 신살은 도사에게 물어보면 더 들을 수 있다.` : undefined,
+      })
+    }
+  } else {
+    cards.push({
+      id: 'hour-unknown',
+      title: '시간을 알면 더 보이는 것',
+      blocks: [
+        {
+          lines: [
+            '십신 구성·합충·신살·대운 흐름은 시주(태어난 시간)까지 있어야 정확하게 판정된다.',
+            '출생 시간을 알게 되면 정보 수정에서 채워 넣게 — 그때 전체 풀이가 열린다.',
+          ],
+        },
+      ],
+    })
+  }
+
+  if (unseSec) {
+    const ex = unseSec.block.excerpts[0]
+    cards.push({
+      id: 'unse',
+      title: `올해의 운 — ${unseYear}년`,
+      blocks: [{ lines: ex.paras.slice(0, 6), source: exSrc(ex) }],
+      note: ex.totalParas > 6 ? `전체 ${ex.totalParas}문단 중 일부 — 나머지는 도사와의 대화에서.` : undefined,
+    })
+  }
+
+  return { headline, unseYear, dialogue, cards }
 }
 
-// 샘플 프로필의 실제 근거 리딩 (state로 input이 안 오면 폴백)
-// 모듈 평가 시점 호출 금지 — KB는 main.tsx의 loadKb() 게이트 이후에만 존재한다(Q05 경량화).
+// 샘플 리딩(데모 폴백) — KB는 main.tsx의 loadKb() 게이트 이후에만 존재(모듈 시점 호출 금지).
 let _grounded: Reading | null = null
 export function groundedReading(): Reading {
-  if (!_grounded) _grounded = toReading({ year: 1990, month: 1, day: 1, hour: 8, minute: 24, gender: 'F' })
+  if (!_grounded) _grounded = toReading(SAMPLE_INPUT)
   return _grounded
+}
+
+/** 시간 모름일 때 오행 분포 재계산 — 날조된 시주 2자를 빼고 6자로 판정(비율 기준은 동일) */
+export function ohaengWithoutHour(pillars: PillarT[]): OhaengStatT[] {
+  const rest = pillars.filter((p) => p.title !== '시')
+  const count: Record<string, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 }
+  for (const p of rest) {
+    count[p.ganE]++
+    count[p.jiE]++
+  }
+  const total = rest.length * 2
+  return (['목', '화', '토', '금', '수'] as const).map((key) => {
+    const pct = (count[key] / total) * 100
+    let verdict: OhaengStatT['verdict'] = '적정'
+    if (pct === 0) verdict = '부족'
+    else if (pct <= 12.5) verdict = '적정'
+    else if (pct <= 25) verdict = '발달'
+    else verdict = '과다'
+    return { key, pct: Math.round(pct * 10) / 10, verdict }
+  })
 }
