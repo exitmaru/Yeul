@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Box, Typography, OutlinedInput, Select, MenuItem, Button, Stack } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
@@ -26,13 +26,14 @@ function CorrectionChip({ text, on, onClick, disabled }: { text: string; on: boo
   return (
     <Box
       onClick={disabled ? undefined : onClick}
+      role="button"
       sx={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 0.6,
-        py: 1.1,
+        py: 1.4,
         borderRadius: 100,
         bgcolor: on ? tokens.color.primarySoft : 'var(--c-card)',
         border: `1px solid ${on ? tokens.color.primary : tokens.color.border}`,
@@ -43,7 +44,7 @@ function CorrectionChip({ text, on, onClick, disabled }: { text: string; on: boo
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled ? 0.5 : 1,
         transition: 'transform .12s var(--ease)',
-        '&:active': disabled ? {} : { transform: 'scale(0.97)' },
+        '&:active': disabled ? {} : { transform: 'scale(0.98)' },
       }}
     >
       {on ? '✓' : ''} {text}
@@ -72,6 +73,22 @@ export default function InfoInput() {
   const [solarCorr, setSolarCorr] = useState(true)
   const [lateZi, setLateZi] = useState(false)
   const [error, setError] = useState('')
+  const [errField, setErrField] = useState('')
+
+  // 숫자 필드 자동 포커스 체인(년 4자리 → 월 → 일 → 시 → 분) — 타이핑 피커화
+  const moRef = useRef<HTMLInputElement | null>(null)
+  const dRef = useRef<HTMLInputElement | null>(null)
+  const hhRef = useRef<HTMLInputElement | null>(null)
+  const miRef = useRef<HTMLInputElement | null>(null)
+  const numChange = (set: (v: string) => void, max: number, next?: React.RefObject<HTMLInputElement | null>) => (e: { target: { value: string } }) => {
+    const v = e.target.value.replace(/\D/g, '').slice(0, max)
+    set(v)
+    if (v.length === max) next?.current?.focus()
+  }
+  const fail = (field: string, msg: string) => {
+    setErrField(field)
+    setError(msg)
+  }
 
   const loadProfile = (p: StoredProfile) => {
     setLoadedId(p.id)
@@ -98,15 +115,16 @@ export default function InfoInput() {
     const hour = hourUnknown ? 12 : num(hh)
     const minute = hourUnknown ? 0 : mi.trim() === '' ? 0 : num(mi)
 
-    if (!name.trim()) return setError('이름(별명도 좋아요)을 입력해 주세요.')
-    if (!Number.isInteger(year) || year < 1900 || year > 2100) return setError('출생 연도는 1900~2100년만 지원해요.')
-    if (!Number.isInteger(month) || month < 1 || month > 12) return setError('월은 1~12 사이로 입력해 주세요.')
+    setErrField('')
+    if (!name.trim()) return fail('name', '이름(별명도 좋아요)을 입력해 주세요.')
+    if (!Number.isInteger(year) || year < 1900 || year > 2100) return fail('y', '출생 연도는 1900~2100년만 지원해요.')
+    if (!Number.isInteger(month) || month < 1 || month > 12) return fail('mo', '월은 1~12 사이로 입력해 주세요.')
     const dt = new Date(Date.UTC(year, month - 1, day))
     if (!Number.isInteger(day) || day < 1 || dt.getUTCMonth() !== month - 1 || dt.getUTCDate() !== day)
-      return setError('실제로 있는 날짜인지 확인해 주세요.')
+      return fail('d', '실제로 있는 날짜인지 확인해 주세요.')
     if (!hourUnknown) {
-      if (!Number.isInteger(hour) || hour < 0 || hour > 23) return setError('시각은 0~23시로 입력해 주세요. 모르면 「시간 모름」을 켜세요.')
-      if (!Number.isInteger(minute) || minute < 0 || minute > 59) return setError('분은 0~59로 입력해 주세요.')
+      if (!Number.isInteger(hour) || hour < 0 || hour > 23) return fail('hh', '시각은 0~23시로 입력해 주세요. 모르면 「시간 모름」을 켜세요.')
+      if (!Number.isInteger(minute) || minute < 0 || minute > 59) return fail('mi', '분은 0~59로 입력해 주세요.')
     }
 
     const profile = saveProfile({
@@ -131,7 +149,7 @@ export default function InfoInput() {
       const chart = computeChartUI(input)
       nav(`/loading?${profileToSearch(profile)}`, { state: { chart, input, profile } })
     } catch {
-      setError('만세력 계산 범위를 벗어났어요. 날짜를 다시 확인해 주세요.')
+      fail('y', '만세력 계산 범위를 벗어났어요. 날짜를 다시 확인해 주세요.')
     }
   }
 
@@ -139,9 +157,32 @@ export default function InfoInput() {
     <Screen>
       <StatusBar />
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2.5, pb: 2 }}>
-        <Typography sx={{ fontSize: 25, fontWeight: 800, letterSpacing: 'var(--tracking)', mt: 1, mb: 0.5 }}>
-          정보를 입력해 주세요.
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mt: 1, mb: 0.5 }}>
+          {/* 뒤로가기 — 인앱 이탈 수단(CircleBtn 규격 계승) */}
+          <Box
+            onClick={() => (window.history.length <= 1 ? nav('/') : nav(-1))}
+            role="button"
+            aria-label="뒤로"
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              bgcolor: tokens.color.primarySoft,
+              color: tokens.color.primary,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 17,
+              cursor: 'pointer',
+              flex: '0 0 auto',
+              transition: 'transform .12s var(--ease)',
+              '&:active': { transform: 'scale(0.98)' },
+            }}
+          >
+            ‹
+          </Box>
+          <Typography sx={{ fontSize: 25, fontWeight: 800, letterSpacing: 'var(--tracking)' }}>정보를 입력해 주세요.</Typography>
+        </Box>
 
         {saved.length > 0 && (
           <>
@@ -152,10 +193,11 @@ export default function InfoInput() {
                 <Box
                   key={p.id}
                   onClick={() => loadProfile(p)}
+                  role="button"
                   sx={{
                     flex: '0 0 auto',
                     px: 1.6,
-                    py: 0.9,
+                    py: 1.3,
                     borderRadius: 100,
                     fontSize: 12.5,
                     fontWeight: 700,
@@ -164,7 +206,7 @@ export default function InfoInput() {
                     border: `1px solid ${loadedId === p.id ? tokens.color.primary : tokens.color.border}`,
                     color: loadedId === p.id ? tokens.color.primary : tokens.color.inkSub,
                     transition: 'transform .12s var(--ease)',
-                    '&:active': { transform: 'scale(0.97)' },
+                    '&:active': { transform: 'scale(0.98)' },
                   }}
                 >
                   {p.name} · {String(p.year).slice(2)}년생
@@ -181,13 +223,15 @@ export default function InfoInput() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="별명도 좋아요"
+            error={errField === 'name'}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            inputProps={{ 'aria-label': '이름' }}
             sx={{ borderRadius: '12px', bgcolor: 'var(--c-card)' }}
           />
-          <Select value={gender} onChange={(e) => setGender(e.target.value as typeof gender)} sx={{ ...selectSx, width: 104 }}>
+          <Select value={gender} onChange={(e) => setGender(e.target.value as typeof gender)} aria-label="성별" sx={{ ...selectSx, width: 104 }}>
             <MenuItem value="여자">여자</MenuItem>
             <MenuItem value="남자">남자</MenuItem>
           </Select>
@@ -195,21 +239,58 @@ export default function InfoInput() {
 
         <Label>생년월일</Label>
         <Stack direction="row" spacing={1}>
-          <Select value={cal} onChange={(e) => setCal(e.target.value as typeof cal)} sx={{ ...selectSx, width: 118 }}>
+          <Select value={cal} onChange={(e) => setCal(e.target.value as typeof cal)} aria-label="달력 종류" sx={{ ...selectSx, width: 118 }}>
             <MenuItem value="양력">양력</MenuItem>
             <MenuItem value="음력" disabled>음력 (준비 중)</MenuItem>
             <MenuItem value="음력(윤달)" disabled>음력(윤달) (준비 중)</MenuItem>
           </Select>
-          <OutlinedInput value={y} onChange={(e) => setY(e.target.value)} placeholder="1990" inputMode="numeric" sx={{ ...numSx, flex: 1.3 }} />
-          <OutlinedInput value={mo} onChange={(e) => setMo(e.target.value)} placeholder="01" inputMode="numeric" sx={{ ...numSx, flex: 1 }} />
-          <OutlinedInput value={d} onChange={(e) => setD(e.target.value)} placeholder="01" inputMode="numeric" sx={{ ...numSx, flex: 1 }} />
+          <OutlinedInput
+            value={y}
+            onChange={numChange(setY, 4, moRef)}
+            placeholder="1990"
+            error={errField === 'y'}
+            endAdornment={<span style={{ fontSize: 12.5, color: 'var(--c-ink-sub)' }}>년</span>}
+            inputProps={{ 'aria-label': '출생 연도', inputMode: 'numeric' }}
+            sx={{ ...numSx, flex: 1.3 }}
+          />
+          <OutlinedInput
+            value={mo}
+            onChange={numChange(setMo, 2, dRef)}
+            inputRef={moRef}
+            placeholder="01"
+            error={errField === 'mo'}
+            endAdornment={<span style={{ fontSize: 12.5, color: 'var(--c-ink-sub)' }}>월</span>}
+            inputProps={{ 'aria-label': '출생 월', inputMode: 'numeric' }}
+            sx={{ ...numSx, flex: 1 }}
+          />
+          <OutlinedInput
+            value={d}
+            onChange={numChange(setD, 2, hhRef)}
+            inputRef={dRef}
+            placeholder="01"
+            error={errField === 'd'}
+            endAdornment={<span style={{ fontSize: 12.5, color: 'var(--c-ink-sub)' }}>일</span>}
+            inputProps={{ 'aria-label': '출생 일', inputMode: 'numeric' }}
+            sx={{ ...numSx, flex: 1 }}
+          />
         </Stack>
 
         <Label
           hint={
             <Typography
               onClick={() => setHourUnknown((v) => !v)}
-              sx={{ fontSize: 12.5, color: hourUnknown ? tokens.color.primary : tokens.color.inkFaint, fontWeight: 700, cursor: 'pointer', userSelect: 'none' }}
+              role="button"
+              sx={{
+                fontSize: 12.5,
+                color: hourUnknown ? tokens.color.primary : tokens.color.inkSub,
+                fontWeight: 700,
+                cursor: 'pointer',
+                userSelect: 'none',
+                py: 1.5,
+                my: -1.5,
+                px: 1,
+                mx: -1,
+              }}
             >
               {hourUnknown ? '☑' : '◻'} 시간 모름
             </Typography>
@@ -218,20 +299,42 @@ export default function InfoInput() {
           태어난 시간
         </Label>
         <Stack direction="row" spacing={1} sx={{ opacity: hourUnknown ? 0.45 : 1 }}>
-          <OutlinedInput value={hh} onChange={(e) => setHh(e.target.value)} placeholder="08" inputMode="numeric" disabled={hourUnknown} sx={{ ...numSx, flex: 1 }} />
+          <OutlinedInput
+            value={hh}
+            onChange={numChange(setHh, 2, miRef)}
+            inputRef={hhRef}
+            placeholder="08"
+            error={errField === 'hh'}
+            disabled={hourUnknown}
+            endAdornment={<span style={{ fontSize: 12.5, color: 'var(--c-ink-sub)' }}>시</span>}
+            inputProps={{ 'aria-label': '출생 시', inputMode: 'numeric' }}
+            sx={{ ...numSx, flex: 1 }}
+          />
           <Box sx={{ alignSelf: 'center', fontWeight: 800, color: tokens.color.inkFaint }}>:</Box>
-          <OutlinedInput value={mi} onChange={(e) => setMi(e.target.value)} placeholder="24" inputMode="numeric" disabled={hourUnknown} sx={{ ...numSx, flex: 1 }} />
+          <OutlinedInput
+            value={mi}
+            onChange={numChange(setMi, 2)}
+            inputRef={miRef}
+            placeholder="00"
+            error={errField === 'mi'}
+            disabled={hourUnknown}
+            endAdornment={<span style={{ fontSize: 12.5, color: 'var(--c-ink-sub)' }}>분</span>}
+            inputProps={{ 'aria-label': '출생 분', inputMode: 'numeric' }}
+            sx={{ ...numSx, flex: 1 }}
+          />
         </Stack>
 
         <Label>태어난 도시</Label>
-        <Select fullWidth value={city} onChange={(e) => setCity(e.target.value)} sx={selectSx} MenuProps={{ slotProps: { paper: { sx: { maxHeight: 300 } } } }}>
+        <Select fullWidth value={city} onChange={(e) => setCity(e.target.value)} aria-label="태어난 도시" sx={selectSx} MenuProps={{ slotProps: { paper: { sx: { maxHeight: 300 } } } }}>
           {CITIES.map((c) => (
             <MenuItem key={c.name} value={c.name}>{c.name}</MenuItem>
           ))}
         </Select>
 
-        <Label>혼인 여부</Label>
-        <Select value={marital} onChange={(e) => setMarital(e.target.value as typeof marital)} sx={{ ...selectSx, width: 148 }}>
+        <Label hint={<Typography sx={{ fontSize: 12.5, color: tokens.color.inkSub, fontWeight: 700 }}>선택 · 풀이 말투에만 참고</Typography>}>
+          혼인 여부
+        </Label>
+        <Select value={marital} onChange={(e) => setMarital(e.target.value as typeof marital)} aria-label="혼인 여부" sx={{ ...selectSx, width: 148 }}>
           <MenuItem value="미혼">미혼</MenuItem>
           <MenuItem value="기혼">기혼</MenuItem>
         </Select>
@@ -241,16 +344,16 @@ export default function InfoInput() {
           <CorrectionChip text="진태양시 보정" on={solarCorr} onClick={() => setSolarCorr((v) => !v)} />
           <CorrectionChip text="야자시 적용" on={lateZi} onClick={() => setLateZi((v) => !v)} disabled={hourUnknown} />
         </Stack>
-        <Typography sx={{ fontSize: 11.5, color: tokens.color.inkFaint, mt: 0.8, lineHeight: 1.5 }}>
+        <Typography sx={{ fontSize: 11.5, color: tokens.color.inkSub, mt: 0.8, lineHeight: 1.5 }}>
           진태양시 = 출생지 경도로 시간을 바로잡는 보정 · 야자시 = 밤 11시대를 당일로 볼지의 유파 선택
         </Typography>
-
-        {error && (
-          <Typography sx={{ fontSize: 13, color: tokens.color.solar, fontWeight: 700, mt: 2 }}>{error}</Typography>
-        )}
       </Box>
 
       <Box sx={{ px: 2.5, pb: 2.5, pt: 1 }}>
+        {/* 에러는 고정 푸터(제출 버튼 위) — 스크롤 폴드 아래로 숨지 않게(260718 실측 수선) */}
+        {error && (
+          <Typography sx={{ fontSize: 13, color: tokens.color.solar, fontWeight: 700, pb: 1.2, textAlign: 'center' }}>{error}</Typography>
+        )}
         <Button fullWidth variant="contained" onClick={onSubmit}>
           사주 풀이하기
         </Button>

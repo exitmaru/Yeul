@@ -5,6 +5,7 @@ import { computeChart } from './vendor/manseryeok.js'
 import { chartToKeys } from './vendor/keyset.js'
 import { buildReport } from './vendor/report.js'
 import { diaryDayInfo } from './vendor/unse.js'
+import { twelveSinsal } from './vendor/sinsal.js'
 import solarTerms from './vendor/data/solar_terms.json'
 import kbRef from './vendor/kb_ref.json'
 
@@ -14,7 +15,7 @@ let kb = null
 let kbPromise = null
 async function fetchKb() {
   const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), 20000) // 스톨 → fail-soft (무한 빈 화면 방지)
+  const timer = setTimeout(() => ctrl.abort(), 8000) // 스톨 → fail-soft (상용 기준: 무피드백 한계 단축, 260718)
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}${kbRef.file}`, { signal: ctrl.signal })
     if (!res.ok || !(res.headers.get('content-type') || '').includes('json'))
@@ -44,7 +45,7 @@ const BRANCH = {
   오: ['화', '+'], 미: ['토', '-'], 신: ['금', '+'], 유: ['금', '-'], 술: ['토', '+'], 해: ['수', '-'],
 }
 
-function pillarUI(title, p, isDay) {
+function pillarUI(title, p, isDay, sinsal) {
   const [ganE, ganPolarity] = STEM[p.stem]
   const [jiE, jiPolarity] = BRANCH[p.branch]
   return {
@@ -53,6 +54,8 @@ function pillarUI(title, p, isDay) {
     gan: p.hanja[0], ganK: p.stem, ganE, ganPolarity,
     ji: p.hanja[1], jiK: p.branch, jiE, jiPolarity,
     botStar: p.branchTenGod, stage: p.twelveStage,
+    hidden: p.hiddenStems ?? [],   // 지장간(포스텔러 표 위계 행 — 엔진 기산출)
+    sinsal,                        // 12신살(주별)
     isDayMaster: isDay || undefined,
   }
 }
@@ -77,20 +80,28 @@ function ohaengDist(pillars) {
 export function computeChartUI(input) {
   const c = computeChart(input, terms)
   const s = c.saju
+  const ss = twelveSinsal(c.pillarsIdx)
   const pillars = [
-    pillarUI('시', s.hour, false),
-    pillarUI('일', s.day, true),
-    pillarUI('월', s.month, false),
-    pillarUI('년', s.year, false),
+    pillarUI('시', s.hour, false, ss.hour),
+    pillarUI('일', s.day, true, ss.day),
+    pillarUI('월', s.month, false, ss.month),
+    pillarUI('년', s.year, false, ss.year),
   ]
   return {
     pillars,
     ohaeng: ohaengDist(pillars),
-    daeun: c.daeun,
+    // 대운 지지에도 오행·음양을 실어 원국표와 같은 타일 문법으로 렌더(같은 계층=같은 모양)
+    daeun: {
+      ...c.daeun,
+      list: c.daeun.list.map((d) => {
+        const [jiE, jiPolarity] = BRANCH[d.name[1]]
+        return { ...d, jiE, jiPolarity }
+      }),
+    },
     dayMaster: { ganK: s.day.stem, gan: s.day.hanja[0], element: STEM[s.day.stem][0] },
     // 진태양시 보정 결과(포스텔러식 '지역시 -32분' 표기용)
     corrected: c.correctedLocal
-      ? { hh: c.correctedLocal.hh, mm: c.correctedLocal.mm, minutes: c.correctedLocal.correctionMinutes }
+      ? { hh: c.correctedLocal.hh, mm: c.correctedLocal.mm, minutes: Math.round(c.correctedLocal.correctionMinutes) }
       : null,
   }
 }

@@ -27,6 +27,16 @@
   --accent: #22409e;
   --accent-rgb: 34, 64, 158;
 
+  /* 스테이지(캐릭터 아트) 위 가독 스크림 — 라이트는 불필요, 다크만 어둡힘(260718 실측 수선) */
+  --stage-scrim: transparent;
+  /* 오행 라벨(카드/페이지 위 텍스트용) — 라이트 = 기존 label 진색, 다크 = 기존 bg 파스텔(팔레트 재사용, 신색 없음) */
+  --oh-label-mok: #3c7059;
+  --oh-label-hwa: #c85b5b;
+  --oh-label-to: #b98a38;
+  --oh-label-geum: #7e7e86;
+  --oh-label-su: #3f6b93;
+  --c-sky-mid: #7fc4de;
+
   /* 글래스모피즘 — YETA 이식(라이트는 15%, 강블러) */
   --glass: rgba(255, 255, 255, 0.15);
   --glass-line: rgba(255, 255, 255, 0.6);
@@ -61,6 +71,14 @@
 
   --accent: #3ad9c0;
   --accent-rgb: 58, 217, 192;
+
+  --stage-scrim: rgba(10, 10, 14, 0.55);
+  --oh-label-mok: #8fbba1;
+  --oh-label-hwa: #e98d8d;
+  --oh-label-to: #f1ce8c;
+  --oh-label-geum: #dbdce0;
+  --oh-label-su: #8fb0cc;
+  --c-sky-mid: #1a262e;
 
   /* 글래스 — YETA 확정값(초투명·강블러) */
   --glass: rgba(255, 255, 255, 0.005);

@@ -5,6 +5,8 @@ import Screen from '../components/Screen'
 import StatusBar from '../components/StatusBar'
 import OhaengTile from '../components/OhaengTile'
 import { tokens } from '../theme'
+import { computeChartUI } from '../engine'
+import { parseShare } from '../data/profiles'
 import type { Pillar } from '../data/saju'
 
 const fallbackTiles = [
@@ -20,16 +22,26 @@ export default function Loading() {
   useEffect(() => {
     // 스크린샷용: ?hold 파라미터가 있으면 자동 이동을 멈춘다
     if (new URLSearchParams(loc.search).has('hold')) return
-    const t = setTimeout(() => nav(`/result${loc.search}`, { state: loc.state, replace: true }), 2400)
+    const t = setTimeout(() => nav(`/result${loc.search}`, { state: loc.state, replace: true }), 1200)
     return () => clearTimeout(t)
   }, [nav, loc.search, loc.state])
 
-  // 내 원국 천간 4자가 있으면 그걸 띄운다(연출도 실데이터)
+  // 내 원국 천간 4자가 있으면 그걸 띄운다(연출도 실데이터) — state 없으면 URL 파라미터로 실계산
   const tiles = useMemo(() => {
-    const chart = (loc.state as { chart?: { pillars: Pillar[] } } | null)?.chart
-    if (!chart?.pillars?.length) return fallbackTiles
-    return chart.pillars.map((p) => ({ main: p.ganK, hanja: p.gan, polarity: p.ganPolarity, element: p.ganE }))
-  }, [loc.state])
+    let pillars = (loc.state as { chart?: { pillars: Pillar[] } } | null)?.chart?.pillars
+    if (!pillars?.length) {
+      const shared = parseShare(loc.search)
+      if (shared) {
+        try {
+          pillars = computeChartUI(shared.input).pillars
+        } catch {
+          /* 폴백 유지 */
+        }
+      }
+    }
+    if (!pillars?.length) return fallbackTiles
+    return pillars.map((p) => ({ main: p.ganK, hanja: p.gan, polarity: p.ganPolarity, element: p.ganE }))
+  }, [loc.state, loc.search])
 
   return (
     <Screen>

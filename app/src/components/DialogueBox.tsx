@@ -26,7 +26,7 @@ export default function DialogueBox({
             fontWeight: 800,
             fontSize: 13.5,
             letterSpacing: 'var(--tracking)',
-            boxShadow: '0 4px 12px rgba(62,59,224,0.35)',
+            boxShadow: '0 4px 12px rgba(var(--accent-rgb), 0.35)',
           }}
         >
           {speaker}

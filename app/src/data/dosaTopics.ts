@@ -120,9 +120,21 @@ function blockLead(b: TopicBlock | undefined, nParas: number, tone?: DosaLine['t
   return line ? [line] : []
 }
 
-/** 증류 리스트(성격[]/직업[]/…) → 항목당 대사 1개(원문 그대로) */
+/** 증류 리스트(성격[]/직업[]/…) → 2항목씩 한 대사로 묶음(원문 무변형 — 탭 파편화 완화, '올해' 3문단 묶음과 동형) */
 function listLines(items: string[] | undefined, grounds?: GroundRef[]): DosaLine[] {
-  return (items ?? []).map((text) => ({ text, ...(grounds ? { grounds } : {}) }))
+  const src = items ?? []
+  const out: DosaLine[] = []
+  for (let i = 0; i < src.length; i += 2) {
+    out.push({ text: src.slice(i, i + 2).join('\n\n'), ...(grounds ? { grounds } : {}) })
+  }
+  return out
+}
+
+/** 받침 유무 조사 선택("기질을/기질를" 오류 방지) */
+const josa = (word: string, withBatchim: string, without: string): string => {
+  const code = word.charCodeAt(word.length - 1)
+  if (code < 0xac00 || code > 0xd7a3) return without
+  return (code - 0xac00) % 28 > 0 ? withBatchim : without
 }
 
 /**
@@ -181,9 +193,12 @@ export function topicLines(report: ReportBundle, topicKey: string, hourUnknown =
       for (const pd of d?.관점차이 ?? []) {
         const views = pd.견해 ?? []
         if (!views.length) continue
-        const stated = views.map((v) => `${v.src.split('#')[0]}는 "${v.내용}"`).join(', ')
+        const stated = views.map((v) => {
+          const doc = v.src.split('#')[0]
+          return `${doc}${josa(doc, '은', '는')} "${v.내용}"`
+        }).join(', ')
         out.push({
-          text: `문헌마다 보는 눈이 달라요 — ${pd.주제}를 두고 ${stated}라고 봐요.`,
+          text: `문헌마다 보는 눈이 다르구나 — ${pd.주제}${josa(pd.주제, '을', '를')} 두고 ${stated}라 본다.`,
           tone: 'hedge',
           grounds: views.map((v) => ({ doc: v.src.split('#')[0], title: `관점차이 — ${pd.주제}` })),
         })

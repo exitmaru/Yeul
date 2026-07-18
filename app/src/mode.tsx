@@ -27,6 +27,8 @@ export function ModeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = mode
+    // 브라우저 크롬(주소창) 색을 앱 내 수동 토글과 동조 — 미디어 분기 메타는 초기 폴백
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', mode === 'dark' ? '#131315' : '#22409e'))
     try {
       localStorage.setItem('saju-mode', mode)
     } catch {
