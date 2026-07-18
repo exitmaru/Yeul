@@ -19,7 +19,7 @@ export default function CharacterStage({
         sx={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(180deg, ${tokens.color.skyTop} 0%, #7fc4de 45%, ${tokens.color.skyBot} 100%)`,
+          background: `linear-gradient(180deg, ${tokens.color.skyTop} 0%, var(--c-sky-mid) 45%, ${tokens.color.skyBot} 100%)`,
         }}
       />
       {/* 캐릭터 플레이트 */}
@@ -34,6 +34,8 @@ export default function CharacterStage({
         }}
       />
       {tint && <Box sx={{ position: 'absolute', inset: 0, background: tint, mixBlendMode: 'soft-light' }} />}
+      {/* 다크 모드 가독 스크림 — 라이트 = transparent(index.css 정본) */}
+      <Box sx={{ position: 'absolute', inset: 0, background: 'var(--stage-scrim)' }} />
       {/* 하단 페이드 */}
       <Box
         sx={{

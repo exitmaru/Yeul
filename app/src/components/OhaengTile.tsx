@@ -33,15 +33,15 @@ export default function OhaengTile({
         justifyContent: 'center',
         lineHeight: 1,
         position: 'relative',
-        border: highlight ? `2.4px solid ${tokens.color.ink}` : '2.4px solid transparent',
+        border: highlight ? `2.4px solid ${tokens.color.primary}` : '2.4px solid transparent',
         boxShadow: 'inset 0 -6px 10px rgba(0,0,0,0.06)',
       }}
     >
       <Box sx={{ position: 'relative', display: 'flex', alignItems: 'baseline', gap: '2px' }}>
         <span style={{ fontSize: size * 0.42, fontWeight: 800, letterSpacing: 'var(--tracking)' }}>{main}</span>
-        <span style={{ fontSize: size * 0.24, fontWeight: 700, opacity: 0.65 }}>{hanja}</span>
+        <span style={{ fontSize: size * 0.24, fontWeight: 700 }}>{hanja}</span>
       </Box>
-      <span style={{ fontSize: size * 0.19, fontWeight: 700, color: o.label, marginTop: 2 }}>
+      <span style={{ fontSize: size * 0.21, fontWeight: 700, color: o.ink, marginTop: 2 }}>
         {polarity}
         {element}
       </span>
