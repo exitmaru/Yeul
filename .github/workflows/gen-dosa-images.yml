@@ -28,9 +28,10 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_NOMUTE }}
         run: |
+          KEY_CLEAN=$(printf '%s' "$OPENAI_API_KEY" | tr -d '[:space:]')
           echo "GET /v1/models HTTP status:"
           curl -sS -m 20 -o /dev/null -w '%{http_code}\n' \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Authorization: Bearer $KEY_CLEAN" \
             https://api.openai.com/v1/models || echo "curl connect FAILED (exit $?)"
 
       - name: Generate 5 cuts (gpt-image-1)

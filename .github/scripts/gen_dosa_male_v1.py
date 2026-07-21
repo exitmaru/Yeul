@@ -9,7 +9,7 @@ import time
 
 import requests
 
-KEY = os.environ["OPENAI_API_KEY"]
+KEY = "".join(os.environ["OPENAI_API_KEY"].split())  # 복붙 개행·공백 제거(2호 런 InvalidHeader 실측 — 시크릿 값에 whitespace 포함)
 AUTH = {"Authorization": f"Bearer {KEY}"}
 API = "https://api.openai.com/v1/images"
 
