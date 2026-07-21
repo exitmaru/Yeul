@@ -1,13 +1,18 @@
 # 남신 도사 시안 컷 5종 생성 (Q.17) — 프롬프트 정본 = docs/20260721_141213_남신도사_페르소나_GPT이미지프롬프트_v1.md
 # 컷1 = generations(기준 얼굴) → 컷2~5 = edits(컷1 참조 = 캐릭터 일관성). GH Actions 러너 전용.
+# v2: openai SDK가 러너에서 APIConnectionError를 내 requests 직결로 교체(상태코드 가시화) — 260721 1호 런 실측.
 import base64
+import os
 import pathlib
 import sys
 import time
 
-from openai import OpenAI
+import requests
 
-client = OpenAI()
+KEY = os.environ["OPENAI_API_KEY"]
+AUTH = {"Authorization": f"Bearer {KEY}"}
+API = "https://api.openai.com/v1/images"
+
 OUT = pathlib.Path("app/public/reports/dosa-male-v1")
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -41,39 +46,47 @@ def save(name: str, b64: str) -> None:
     print(f"saved {path} ({path.stat().st_size} bytes)", flush=True)
 
 
-def with_retry(fn, label: str):
-    for attempt in range(3):
+def b64_or_raise(r: requests.Response) -> str:
+    if r.status_code != 200:
+        raise RuntimeError(f"HTTP {r.status_code}: {r.text[:300]}")
+    return r.json()["data"][0]["b64_json"]
+
+
+def gen_cut1() -> str:
+    r = requests.post(
+        f"{API}/generations", headers=AUTH, timeout=300,
+        json={"model": "gpt-image-1", "prompt": CUT1, "size": SIZE, "quality": QUALITY},
+    )
+    return b64_or_raise(r)
+
+
+def edit_from_cut1(prompt: str, fidelity: bool = True) -> str:
+    data = {"model": "gpt-image-1", "prompt": prompt, "size": SIZE, "quality": QUALITY}
+    if fidelity:
+        data["input_fidelity"] = "high"
+    with open(OUT / "cut1_arrogant.png", "rb") as f:
+        r = requests.post(
+            f"{API}/edits", headers=AUTH, timeout=300, data=data,
+            files={"image": ("cut1.png", f, "image/png")},
+        )
+    if fidelity and r.status_code == 400 and "input_fidelity" in r.text:
+        return edit_from_cut1(prompt, fidelity=False)
+    return b64_or_raise(r)
+
+
+def with_retry(fn, label: str) -> str:
+    for attempt in range(4):
         try:
             return fn()
         except Exception as e:  # noqa: BLE001 — 러너 1회성 스크립트, 원인 불문 재시도 후 중단
-            print(f"retry {label} ({attempt + 1}/3): {type(e).__name__}: {e}", flush=True)
+            print(f"retry {label} ({attempt + 1}/4): {type(e).__name__}: {e}", flush=True)
             time.sleep(20)
-    print(f"::error::{label} 3회 실패", flush=True)
+    print(f"::error::{label} 4회 실패", flush=True)
     sys.exit(1)
 
 
-def edit_cut1(prompt: str):
-    with open(OUT / "cut1_arrogant.png", "rb") as f:
-        try:
-            return client.images.edit(
-                model="gpt-image-1", image=f, prompt=prompt,
-                size=SIZE, quality=QUALITY, input_fidelity="high",
-            )
-        except TypeError:  # 구버전 SDK = input_fidelity 미지원
-            f.seek(0)
-            return client.images.edit(
-                model="gpt-image-1", image=f, prompt=prompt, size=SIZE, quality=QUALITY,
-            )
-
-
-r = with_retry(
-    lambda: client.images.generate(model="gpt-image-1", prompt=CUT1, size=SIZE, quality=QUALITY),
-    "cut1_arrogant",
-)
-save("cut1_arrogant", r.data[0].b64_json)
-
+save("cut1_arrogant", with_retry(gen_cut1, "cut1_arrogant"))
 for name, prompt in EDITS:
-    r = with_retry(lambda p=prompt: edit_cut1(p), name)
-    save(name, r.data[0].b64_json)
+    save(name, with_retry(lambda p=prompt: edit_from_cut1(p), name))
 
 print("all 5 cuts done", flush=True)

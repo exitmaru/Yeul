@@ -22,7 +22,16 @@ jobs:
           python-version: '3.12'
 
       - name: Install deps
-        run: pip install --quiet openai
+        run: pip install --quiet requests
+
+      - name: Probe OpenAI reachability
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_NOMUTE }}
+        run: |
+          echo "GET /v1/models HTTP status:"
+          curl -sS -m 20 -o /dev/null -w '%{http_code}\n' \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            https://api.openai.com/v1/models || echo "curl connect FAILED (exit $?)"
 
       - name: Generate 5 cuts (gpt-image-1)
         env:
